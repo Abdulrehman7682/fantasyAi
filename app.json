@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Fantasy AI",
+    "slug": "fantasyai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/crystalball.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fantasyai.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.fantasyai.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "fantasyai",
+              "host": "fantasyai.com"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      "expo-build-properties",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.fantasyai.app",
+          "enableGooglePay": true
+        }
+      ]
+    ],
+    "scheme": "fantasyai",
+    "extra": {
+      "supabaseUrl": "https://jphpomjcsnqyiliphmcs.supabase.co",
+      "supabaseKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwaHBvbWpjc25xeWlsaXBobWNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMTQ5NzYsImV4cCI6MjA1ODY5MDk3Nn0.MxS3pbhH9oGSDF-uUH3E4NSPO58W_VIW-kx8Yukslfw",
+      "stripePublishableKey": "pk_test_51RKw84Q9CCQHtiDJ5SXtewvnBdeC21VL8vN6FAl6E6shVqnx6O417udYp9DmIQeRLP8YBoI9VWqGnpkTGIFeDO6200ORb2wwmQ" 
+    }
+  }
+}
