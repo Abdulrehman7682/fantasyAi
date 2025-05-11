@@ -1,6 +1,8 @@
 
 [functions.openrouter-proxy]
 enabled = true
+[auth.external.google]
+client_id = 503603363717-14ccolrlec61qlame0ltoffuvdbhoa7k.apps.googleusercontent.com
 verify_jwt = true
 import_map = "./functions/openrouter-proxy/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.

@@ -52,6 +52,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [freeMessageCount, setFreeMessageCount] = useState<number>(0); // Added free message count state
   const [offerShown, setOfferShown] = useState(false);
   const [credits, setCredits] = useState<number | null>(null); // Added credits state
+  const [isLoginGoogle, setIsLoginGoogle] = useState(false);
   // Removed unused lastDiscountOfferDate state
 
   // Combined initialization useEffect

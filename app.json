@@ -42,6 +42,7 @@
     },
     "plugins": [
       "expo-build-properties",
+      "@react-native-google-signin/google-signin",
       [
         "@stripe/stripe-react-native",
         {

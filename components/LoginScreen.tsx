@@ -21,12 +21,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack'; // Import StackNavigationProp
 import * as AuthSession from 'expo-auth-session'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin'
 import { supabase } from '../scripts/supabaseClient'
 import type { Session } from '@supabase/supabase-js'
+// import { useNavigation } from '@react-navigation/native';
 
 // Define navigation param list for the Auth stack
 type AuthStackParamList = {
@@ -98,16 +100,23 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
 
   useEffect(() => {
     GoogleSignin.configure({
-      scopes: ['https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/userinfo.profile'],
+      scopes: ['https://www.googleapis.com/auth/userinfo.email'],
       webClientId: '503603363717-14ccolrlec61qlame0ltoffuvdbhoa7k.apps.googleusercontent.com',
+      offlineAccess: true,
+      forceCodeForRefreshToken: true,
+
     })  
+    console.log("GoogleSignin configured")
   }, [])
 
   const signInWithGoogle = async () => { 
+    console.log("signInWithGoogle")
     try {
-      // await GoogleSignin.hasPlayServices()
+      console.log("try to sign in with google")
+      await GoogleSignin.hasPlayServices()
       const userInfo = await GoogleSignin.signIn()
       console.log("userinfo", userInfo)
+      console.log("userinfoId", userInfo.data?.idToken)
       if (userInfo?.data?.idToken) {
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: 'google',
@@ -115,6 +124,7 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
         })
         console.log("data", data)
         console.log("error", error)
+        //  await AsyncStorage.setItem('isLogin', 'true');
       } else {
         throw new Error('no ID token present!')
       }
