@@ -20,6 +20,13 @@ import * as WebBrowser from 'expo-web-browser';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack'; // Import StackNavigationProp
+import * as AuthSession from 'expo-auth-session'
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin'
+import { supabase } from '../scripts/supabaseClient'
+import type { Session } from '@supabase/supabase-js'
 
 // Define navigation param list for the Auth stack
 type AuthStackParamList = {
@@ -48,13 +55,20 @@ const colors = {
   errorText: '#FF3B30',
   errorBackground: 'rgba(255, 0, 0, 0.1)',
 };
+// export default function () {
+//   GoogleSignin.configure({
+//     scopes: ['https://www.googleapis.com/auth/userinfo.email'],
+//     webClientId: '503603363717-14ccolrlec61qlame0ltoffuvdbhoa7k.apps.googleusercontent.com',
+//   }) 
+// }
 
 export default function LoginScreen({ navigation }: { navigation: LoginScreenNavigationProp }) { // Add type annotation
-  const { signInWithApple, signInWithGoogle, skipAuth } = useAuth();
+  const { signInWithApple,  skipAuth } = useAuth();
   const { isDarkMode } = useContext(ThemeContext);
   const { resetOnboarding } = useOnboarding(); // Add this line to get resetOnboarding function
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null)
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -75,6 +89,48 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
     ]).start();
   }, []);
 
+  // export default function () {
+  //   GoogleSignin.configure({
+  //     scopes: ['https://www.googleapis.com/auth/userinfo.email'],
+  //     webClientId: '503603363717-14ccolrlec61qlame0ltoffuvdbhoa7k.apps.googleusercontent.com',
+  //   })  
+  // }
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      scopes: ['https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/userinfo.profile'],
+      webClientId: '503603363717-14ccolrlec61qlame0ltoffuvdbhoa7k.apps.googleusercontent.com',
+    })  
+  }, [])
+
+  const signInWithGoogle = async () => { 
+    try {
+      // await GoogleSignin.hasPlayServices()
+      const userInfo = await GoogleSignin.signIn()
+      console.log("userinfo", userInfo)
+      if (userInfo?.data?.idToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: userInfo.data.idToken,
+        })
+        console.log("data", data)
+        console.log("error", error)
+      } else {
+        throw new Error('no ID token present!')
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // play services not available or outdated
+      } else {
+        // some other error happened
+      }
+    }
+  }
+
   const handleAppleSignIn = async () => {
     try {
       setLoading('apple');
@@ -87,17 +143,17 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setLoading('google');
-      setError(null);
-      await signInWithGoogle();
-    } catch (err) {
-      handleAuthError(err, 'Google');
-    } finally {
-      setLoading(null);
-    }
-  };
+  // const handleGoogleSignIn = async () => {
+  //   try {
+  //     setLoading('google');
+  //     setError(null);
+  //     await signInWithGoogle();
+  //   } catch (err) {
+  //     handleAuthError(err, 'Google');
+  //   } finally {
+  //     setLoading(null);
+  //   }
+  // };
 
   const handleEmailSignIn = () => {
     navigation.navigate('EmailSignIn', { isSignUp: false });
@@ -200,7 +256,7 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
             {/* Social sign-in buttons */}
             <TouchableOpacity
               style={styles.socialButton}
-              onPress={handleGoogleSignIn}
+              onPress={signInWithGoogle}
               disabled={loading !== null}
             >
               {loading === 'google' ? (
