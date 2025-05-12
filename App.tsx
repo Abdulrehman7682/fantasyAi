@@ -40,6 +40,7 @@ import DiscountOfferScreen from './components/DiscountOfferScreen';
 import ChatListScreen from './components/ChatListScreen';
 import TermsAndConditionsScreen from './components/TermsAndConditionsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
+import { LoginProvider, navigationRef } from 'contexts/LoginContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -246,19 +247,21 @@ export default function App() {
   // }, []);
 
   return (
-    <StripeProvider
-      publishableKey="pk_test_51RKw84Q9CCQHtiDJ5SXtewvnBdeC21VL8vN6FAl6E6shVqnx6O417udYp9DmIQeRLP8YBoI9VWqGnpkTGIFeDO6200ORb2wwmQ" // Replace with your Stripe test key
-      merchantIdentifier="merchant.com.fantasyai.app" // For Apple Pay (iOS)
-      urlScheme="fantasyai" // For 3D Secure payments
-    >
+    // <StripeProvider
+    //   publishableKey="pk_test_51RKw84Q9CCQHtiDJ5SXtewvnBdeC21VL8vN6FAl6E6shVqnx6O417udYp9DmIQeRLP8YBoI9VWqGnpkTGIFeDO6200ORb2wwmQ" // Replace with your Stripe test key
+    //   merchantIdentifier="merchant.com.fantasyai.app" // For Apple Pay (iOS)
+    //   urlScheme="fantasyai" // For 3D Secure payments
+    // >
       <ThemeProvider>
         <OnboardingProvider>
+          {/* <LoginProvider> */}
           <AuthContextProvider>
             <AppContent />
           </AuthContextProvider>
+          {/* </LoginProvider> */}
         </OnboardingProvider>
       </ThemeProvider>
-    </StripeProvider>
+    // {/* </StripeProvider> */}
   );
 }
 

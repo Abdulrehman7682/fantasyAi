@@ -74,6 +74,7 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+   const { signInFromStorage } = useAuth();
   
   useEffect(() => {
     // Run entrance animations
@@ -124,7 +125,12 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
         })
         console.log("data", data)
         console.log("error", error)
-        //  await AsyncStorage.setItem('isLogin', 'true');
+            if (data?.user) {
+        // ✅ Save user data to AsyncStorage
+        await AsyncStorage.setItem('user', JSON.stringify(data.user))
+        await signInFromStorage(); // ✅ Call the function on mount
+        console.log("User saved to AsyncStorage")
+      }
       } else {
         throw new Error('no ID token present!')
       }

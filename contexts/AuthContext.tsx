@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { supabase } from '../utils/supabase'; // Removed unused specific auth functions
+import { supabase } from '../scripts/supabaseClient'; // Removed unused specific auth functions
 import { Session, User, Provider } from '@supabase/supabase-js';
 // Removed duplicate AuthProvider import
 import * as WebBrowser from 'expo-web-browser';
@@ -38,6 +38,7 @@ interface AuthContextInterface {
   shouldShowDiscountOffer: () => Promise<boolean>;
   markDiscountOfferShown: () => Promise<void>; // Kept for API compatibility, though logic is now minimal
   decrementCredits: (amount: number) => Promise<boolean>; // Added decrement function
+  signInFromStorage: () => Promise<void>; // ✅ Added here
 }
 
 const AuthContext = createContext<AuthContextInterface | undefined>(undefined);
@@ -45,7 +46,7 @@ const AuthContext = createContext<AuthContextInterface | undefined>(undefined);
 export const AuthContextProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Renamed state setter
+  const [isLoading, setIsLoading] = useState(false); // Renamed state setter
   const [isGuest, setIsGuest] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false); // Added subscription state
   const [guestMessageCount, setGuestMessageCount] = useState<number>(0);
@@ -54,136 +55,161 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [credits, setCredits] = useState<number | null>(null); // Added credits state
   const [isLoginGoogle, setIsLoginGoogle] = useState(false);
   // Removed unused lastDiscountOfferDate state
-
-  // Combined initialization useEffect
-  useEffect(() => {
-    let isMounted = true; // Prevent state updates on unmounted component
-
-    async function initializeAuth() {
+   useEffect(() => {
+    const getUserFromStorage = async () => {
       try {
-        // 1. Check Supabase session
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-          console.error('Error fetching Supabase session:', sessionError);
-        }
-
-        if (isMounted) {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          // If there's a session, user is not a guest initially
-          if (currentSession) {
-            setIsGuest(false);
-          }
-        }
-
-        // 2. Ensure guest state is false initially if no session
-        // Guest mode is only entered explicitly via skipAuth function
-        if (!currentSession && isMounted) {
-            setIsGuest(false);
-            // Reset guest-related state just in case (though skipAuth should handle this)
-            setGuestMessageCount(0);
-            setOfferShown(false);
+        const storedUser = await AsyncStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          console.log('User fetched from AsyncStorage:', parsedUser);
+        } else {
+          console.log('No user found in AsyncStorage');
         }
       } catch (error) {
-        console.error('Error during auth initialization:', error);
-        // Decide on default state in case of error, e.g., logged out
-        if (isMounted) {
-            setSession(null);
-            setUser(null);
-            setIsGuest(false); // Default to non-guest on error? Or guest? Needs clarification. Assuming non-guest.
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        console.log('Error fetching user from AsyncStorage:', error);
       }
-    }
-
-    initializeAuth();
-
-    // Setup auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-        if (isMounted) {
-            setSession(newSession);
-            setUser(newSession?.user ?? null);
-            // If auth state changes to having a session, ensure guest mode is off
-            // If auth state changes to no session, guest status depends on whether user explicitly skips auth later
-            if (newSession) {
-                setIsGuest(false);
-                // Identify the user with Superwall and fetch/initialize user data
-                if (newSession.user) {
-                  Superwall.shared.identify({ userId: newSession.user.id });
-                  console.log(`Superwall identified user via shared instance: ${newSession.user.id}`);
-
-                  const userMetadata = newSession.user.user_metadata ?? {};
-                  let needsMetadataUpdate = false;
-                  const metadataUpdatePayload: { [key: string]: any } = {};
-
-                  // --- Subscription Status Logic ---
-                  // Assuming 'is_subscribed' is a boolean in metadata. Adjust if Superwall provides this differently.
-                  const currentSubscriptionStatus = !!userMetadata.is_subscribed;
-                  setIsSubscribed(currentSubscriptionStatus);
-                  console.log(`Subscription status loaded from metadata: ${currentSubscriptionStatus}`);
-
-                  // --- Free Message Count Logic ---
-                  if (!currentSubscriptionStatus) { // Only track free messages for non-subscribed users
-                    if (typeof userMetadata.free_message_count === 'number') {
-                      setFreeMessageCount(userMetadata.free_message_count);
-                      console.log(`Free message count loaded from metadata: ${userMetadata.free_message_count}`);
-                    } else {
-                      // Initialize free message count if not present
-                      const initialFreeCount = 0;
-                      setFreeMessageCount(initialFreeCount);
-                      metadataUpdatePayload.free_message_count = initialFreeCount;
-                      needsMetadataUpdate = true;
-                      console.log(`Initializing free message count to ${initialFreeCount} for user ${newSession.user.id}`);
-                    }
-                  } else {
-                    // Reset free message count for subscribed users (or just don't track)
-                    setFreeMessageCount(0); // Or perhaps Infinity? Setting to 0 for simplicity.
-                  }
-
-                  // --- Credit Initialization Logic ---
-                  if (typeof userMetadata.credits === 'number') {
-                    setCredits(userMetadata.credits);
-                    console.log(`Credits loaded from metadata: ${userMetadata.credits}`);
-                  } else {
-                    const initialCredits = 30; // Default credits if not present
-                    setCredits(initialCredits);
-                    metadataUpdatePayload.credits = initialCredits;
-                    needsMetadataUpdate = true;
-                    console.log(`Initializing credits to ${initialCredits} for user ${newSession.user.id}`);
-                  }
-
-                  // --- Update Supabase Metadata if Needed ---
-                  if (needsMetadataUpdate) {
-                    supabase.auth.updateUser({ data: metadataUpdatePayload })
-                      .then(({ error: updateError }) => {
-                        if (updateError) {
-                          console.error('Error saving initial user metadata to Supabase:', updateError);
-                          // Handle error: maybe revert local state?
-                        } else {
-                          console.log('Successfully saved initial user metadata to Supabase:', metadataUpdatePayload);
-                        }
-                      });
-                  }
-                }
-                // Reset guest-specific state when a user logs in
-                setGuestMessageCount(0);
-                setOfferShown(false);
-                AsyncStorage.removeItem(GUEST_MESSAGE_COUNT_KEY);
-                AsyncStorage.removeItem(OFFER_SHOWN_KEY);
-                AsyncStorage.removeItem('guest_mode');
-            }
-        }
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
     };
-  }, []); // Empty dependency array ensures this runs only once on mount
+
+    getUserFromStorage();
+  }, []);
+  const signInFromStorage = async () => {
+  const storedUser = await AsyncStorage.getItem('user');
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
+};
+
+
+  // Combined initialization useEffect
+  // useEffect(() => {
+  //   let isMounted = true; // Prevent state updates on unmounted component
+
+  //   async function initializeAuth() {
+  //     try {
+  //       // 1. Check Supabase session
+  //       const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+
+  //       if (sessionError) {
+  //         console.error('Error fetching Supabase session:', sessionError);
+  //       }
+
+  //       if (isMounted) {
+  //         setSession(currentSession);
+  //         setUser(currentSession?.user ?? null);
+  //         // If there's a session, user is not a guest initially
+  //         if (currentSession) {
+  //           setIsGuest(false);
+  //         }
+  //       }
+
+  //       // 2. Ensure guest state is false initially if no session
+  //       // Guest mode is only entered explicitly via skipAuth function
+  //       if (!currentSession && isMounted) {
+  //           setIsGuest(false);
+  //           // Reset guest-related state just in case (though skipAuth should handle this)
+  //           setGuestMessageCount(0);
+  //           setOfferShown(false);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error during auth initialization:', error);
+  //       // Decide on default state in case of error, e.g., logged out
+  //       if (isMounted) {
+  //           setSession(null);
+  //           setUser(null);
+  //           setIsGuest(false); // Default to non-guest on error? Or guest? Needs clarification. Assuming non-guest.
+  //       }
+  //     } finally {
+  //       if (isMounted) {
+  //         setIsLoading(false);
+  //       }
+  //     }
+  //   }
+
+  //   initializeAuth();
+
+  //   // Setup auth state change listener
+  //   const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+  //       if (isMounted) {
+  //           setSession(newSession);
+  //           setUser(newSession?.user ?? null);
+  //           // If auth state changes to having a session, ensure guest mode is off
+  //           // If auth state changes to no session, guest status depends on whether user explicitly skips auth later
+  //           if (newSession) {
+  //               setIsGuest(false);
+  //               // Identify the user with Superwall and fetch/initialize user data
+  //               if (newSession.user) {
+  //                 Superwall.shared.identify({ userId: newSession.user.id });
+  //                 console.log(`Superwall identified user via shared instance: ${newSession.user.id}`);
+
+  //                 const userMetadata = newSession.user.user_metadata ?? {};
+  //                 let needsMetadataUpdate = false;
+  //                 const metadataUpdatePayload: { [key: string]: any } = {};
+
+  //                 // --- Subscription Status Logic ---
+  //                 // Assuming 'is_subscribed' is a boolean in metadata. Adjust if Superwall provides this differently.
+  //                 const currentSubscriptionStatus = !!userMetadata.is_subscribed;
+  //                 setIsSubscribed(currentSubscriptionStatus);
+  //                 console.log(`Subscription status loaded from metadata: ${currentSubscriptionStatus}`);
+
+  //                 // --- Free Message Count Logic ---
+  //                 if (!currentSubscriptionStatus) { // Only track free messages for non-subscribed users
+  //                   if (typeof userMetadata.free_message_count === 'number') {
+  //                     setFreeMessageCount(userMetadata.free_message_count);
+  //                     console.log(`Free message count loaded from metadata: ${userMetadata.free_message_count}`);
+  //                   } else {
+  //                     // Initialize free message count if not present
+  //                     const initialFreeCount = 0;
+  //                     setFreeMessageCount(initialFreeCount);
+  //                     metadataUpdatePayload.free_message_count = initialFreeCount;
+  //                     needsMetadataUpdate = true;
+  //                     console.log(`Initializing free message count to ${initialFreeCount} for user ${newSession.user.id}`);
+  //                   }
+  //                 } else {
+  //                   // Reset free message count for subscribed users (or just don't track)
+  //                   setFreeMessageCount(0); // Or perhaps Infinity? Setting to 0 for simplicity.
+  //                 }
+
+  //                 // --- Credit Initialization Logic ---
+  //                 if (typeof userMetadata.credits === 'number') {
+  //                   setCredits(userMetadata.credits);
+  //                   console.log(`Credits loaded from metadata: ${userMetadata.credits}`);
+  //                 } else {
+  //                   const initialCredits = 30; // Default credits if not present
+  //                   setCredits(initialCredits);
+  //                   metadataUpdatePayload.credits = initialCredits;
+  //                   needsMetadataUpdate = true;
+  //                   console.log(`Initializing credits to ${initialCredits} for user ${newSession.user.id}`);
+  //                 }
+
+  //                 // --- Update Supabase Metadata if Needed ---
+  //                 if (needsMetadataUpdate) {
+  //                   supabase.auth.updateUser({ data: metadataUpdatePayload })
+  //                     .then(({ error: updateError }) => {
+  //                       if (updateError) {
+  //                         console.error('Error saving initial user metadata to Supabase:', updateError);
+  //                         // Handle error: maybe revert local state?
+  //                       } else {
+  //                         console.log('Successfully saved initial user metadata to Supabase:', metadataUpdatePayload);
+  //                       }
+  //                     });
+  //                 }
+  //               }
+  //               // Reset guest-specific state when a user logs in
+  //               setGuestMessageCount(0);
+  //               setOfferShown(false);
+  //               AsyncStorage.removeItem(GUEST_MESSAGE_COUNT_KEY);
+  //               AsyncStorage.removeItem(OFFER_SHOWN_KEY);
+  //               AsyncStorage.removeItem('guest_mode');
+  //           }
+  //       }
+  //   });
+
+  //   return () => {
+  //     isMounted = false;
+  //     subscription.unsubscribe();
+  //   };
+  // }, []); // Empty dependency array ensures this runs only once on mount
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
@@ -274,31 +300,21 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   };
 
   const signOut = async (): Promise<void> => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-        // Optionally: Show an error message to the user
-        // Alert.alert(\"Logout Failed\", error.message);
-      } else {
-        console.log('User signed out successfully.');
-        // Reset any local state not handled by onAuthStateChange if necessary
-        // e.g., if you have specific UI state tied to logged-in status
-        // The onAuthStateChange listener should handle setting user/session to null
-        // and resetting isGuest, isSubscribed, credits etc.
-        Superwall.shared.reset(); // Reset Superwall identification
-        console.log('Superwall reset.');
-        // Explicitly clear potentially sensitive async storage if needed
-        // (though onAuthStateChange might already cover this)
-        // await AsyncStorage.clear(); // Use with caution - clears everything
-      }
-    } catch (error: any) {
-      console.error('Unexpected error during sign out:', error);
-      // Alert.alert(\"Logout Failed\", \"An unexpected error occurred.\");
-    } finally {
-      setIsLoading(false);
-    }
+   try {
+    // Supabase sign out
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+
+    // Remove user from AsyncStorage
+    await AsyncStorage.removeItem('user');
+
+    // (optional) Navigate to login screen
+    // navigation.replace('Login');
+    console.log('Signed out from Supabase and removed from AsyncStorage');
+    setUser(null);
+  } catch (err) {
+    console.error('Error signing out:', err);
+  }
   };
 
   const skipAuth = async () => {
@@ -459,7 +475,8 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     shouldShowDiscountOffer,
     markDiscountOfferShown,
     decrementCredits,
-  }), [user, session, isLoading, isGuest, isSubscribed, guestMessageCount, freeMessageCount, credits]); // Added isSubscribed, freeMessageCount to dependencies
+    signInFromStorage
+  }), [user , isGuest, isSubscribed, guestMessageCount, freeMessageCount, credits , signInFromStorage]); // Added isSubscribed, freeMessageCount to dependencies
 
   return (
     <AuthContext.Provider value={value}>
