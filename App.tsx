@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-// import Superwall from '@superwall/react-native-superwall';
+import Superwall from '@superwall/react-native-superwall';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -240,11 +240,11 @@ const Navigation = () => {
 
 // Main App Component
 export default function App() {
-  // useEffect(() => {
-  //   // // Corrected Superwall configuration
-  //   // Superwall.configure({ apiKey: 'pk_a6601ae4587cd2edb8b248286a03d0864a392817c225f6e5' });
-  //   // console.log('Superwall Initialized successfully');
-  // }, []);
+  useEffect(() => {
+    // // Corrected Superwall configuration
+    Superwall.configure({ apiKey: 'pk_a622b399ff8f1125ec9739cf56714d81874802933a4a2cb6' });
+    console.log('Superwall Initialized successfully');
+  }, []);
 
   return (
     // <StripeProvider

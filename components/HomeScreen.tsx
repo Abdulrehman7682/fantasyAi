@@ -9,8 +9,7 @@ import type { RootStackParamList } from '../types/navigation';
 import * as characterService from '../services/characterService';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-// import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
-import { supabase } from '../scripts/supabaseClient'; // Import your Supabase client
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
 
 // Define Category type (make sure it includes all used fields)
 export interface Category {
@@ -39,7 +38,8 @@ interface ChatCharacter {
   model?: string; // Add model field
   system_prompt?: string; // Add system prompt field
   subTasks?: string[]; // Added field for important subtasks/prompts
-}
+}import Superwall from '@superwall/react-native-superwall';
+
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -57,68 +57,69 @@ const HomeScreen = () => {
   // Inside your component:
 const [freeCharactersUsed, setFreeCharactersUsed] = useState<string[]>([]); // Track character IDs
 
-useEffect(() => {
-  console.log('%c HomeScreen mounted', 'background: #000; color: #bada55; font-size: 12px;');
-  console.log('%c User info:', 'color: #3498db; font-weight: bold;', { 
-    user: user ? 'Logged In' : 'Not Logged In',
-    isSubscribed: isSubscribed || false,
-    credits: credits || 0
-  });
-  
-  // Load free characters used from Supabase when component mounts
-  if (user && !isSubscribed) {
-    loadFreeCharactersUsed();
-  }
-  
-  return () => {
-    console.log('%c HomeScreen unmounted', 'background: #000; color: #ff6b6b; font-size: 12px;');
-  };
-}, [user, isSubscribed, credits]);
+  useEffect(() => {
+    console.log('%c HomeScreen mounted', 'background: #000; color: #bada55; font-size: 12px;');
+    console.log('%c User info:', 'color: #3498db; font-weight: bold;', { 
+      user: user ? 'Logged In' : 'Not Logged In',
+      isSubscribed: isSubscribed || false,
+      credits: credits || 0
+    });
+    
+    return () => {
+      console.log('%c HomeScreen unmounted', 'background: #000; color: #ff6b6b; font-size: 12px;');
+    };
+  }, [user, isSubscribed, credits]);
 
+  const handleSubscribe = () => {
+       Superwall.shared.register({
+        placement: "campaign_trigger",
+        feature: () => {
+          // navigation.startWorkout()
+          console.log("first workout");
+        },
+      })
+    };
 
   const getWelcomeMessage = () => {
     return "Welcome back";
   };
  
-  const loadFreeCharactersUsed = async () => {
+  // Load previously used characters on component mount
+useEffect(() => {
+  const loadUsedCharacters = async () => {
     try {
-      const { data, error } = await supabase
-        .from('free_chat')
-        .select('character_id')
-        .eq('user_id', user?.id);
-      
-      if (error) throw error;
-      
-      if (data) {
-        const characterIds = data.map(item => item.character_id);
-        setFreeCharactersUsed(characterIds);
+      const storedChars = await AsyncStorage.getItem('freeCharactersUsed');
+      if (storedChars) {
+        setFreeCharactersUsed(JSON.parse(storedChars));
       }
     } catch (error) {
-      console.error('Error loading free characters used:', error);
+      console.error('Failed to load used characters:', error);
     }
   };
+  loadUsedCharacters();
+}, []);
 
   const handleCategoryPress = async (category: Category) => {
     console.log(`[HomeScreen] Category tile pressed: ${category.title} (ID: ${category.id})`);
-    
-    // Check subscription status and free usage
-    if (!isSubscribed) {
-      // If already used 3 unique characters (and this is a new one)
-      if (freeCharactersUsed.length >= 3 && !freeCharactersUsed.includes(category.id)) {
-        Alert.alert(
-          "Subscription Required",
-          "You've reached the free limit (3 characters). Subscribe to chat with more!",
-          [
-            { text: "Cancel", style: "cancel" },
-            { 
-              text: "Subscribe", 
-              onPress: () => navigation.navigate('SubscriptionScreen') 
-            }
-          ]
-        );
-        return; // Block further action
-      }
+      // ⭐ Check before proceeding
+       // ⭐ Check subscription status and free usage
+  if (!isSubscribed) {
+    // If already used 3 unique characters (and this is a new one)
+    if (freeCharactersUsed.length >= 3 && !freeCharactersUsed.includes(category.id)) {
+      Alert.alert(
+        "Subscription Required",
+        "You've reached the free limit (3 characters). Subscribe to chat with more!",
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Subscribe", 
+            onPress: () => handleSubscribe() 
+          }
+        ]
+      );
+      return; // Block further action
     }
+  }
     setIsLoading(true);
     try {
       // Use the category.id as the unique identifier for the assistant
@@ -179,23 +180,20 @@ useEffect(() => {
         };
       }
 
+      // //Add m 
+      //   // ⭐ Update used count
+      //   if (!isSubscribed) {
+      //     setFreeCharactersUsed(prev => prev + 1);
+      //   }
       if (!isSubscribed && !freeCharactersUsed.includes(category.id)) {
-        const { error } = await supabase
-          .from('free_chat')
-          .insert([
-            { 
-              user_id: user?.id, 
-              character_id: category.id,
-              character_name: category.title,
-              created_at: new Date().toISOString()
-            }
-          ]);
-        
-        if (error) throw error;
-        
-        // Update local state
-        setFreeCharactersUsed(prev => [...prev, category.id]);
+        const updatedUsedChars = [...freeCharactersUsed, category.id];
+        setFreeCharactersUsed(updatedUsedChars);
+        await AsyncStorage.setItem('freeCharactersUsed', JSON.stringify(updatedUsedChars));
+       // await AsyncStorage.removeItem('freeCharactersUsed');
+
       }
+      console.info(`[HomeScreen] Navigating to Chat with Assistant ID: ${characterToPass.id}, Name: ${characterToPass.name}`);
+      console.debug("[HomeScreen] Character data being passed:", characterToPass);
       navigation.navigate('Chat', { character: characterToPass });
 
     } catch (error) {
