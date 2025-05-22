@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Superwall from '@superwall/react-native-superwall';
+import Purchases from 'react-native-purchases';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -242,8 +243,8 @@ const Navigation = () => {
 export default function App() {
   useEffect(() => {
     // // Corrected Superwall configuration
-    Superwall.configure({ apiKey: 'pk_a622b399ff8f1125ec9739cf56714d81874802933a4a2cb6' });
-    console.log('Superwall Initialized successfully');
+    Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
+    console.log('RevenueCat Initialized successfully');
   }, []);
 
   return (

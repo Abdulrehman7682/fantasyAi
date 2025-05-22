@@ -10,6 +10,8 @@ import * as characterService from '../services/characterService';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
+import RevenueCatUI from 'react-native-purchases-ui';
+import Purchases from 'react-native-purchases';
 
 // Define Category type (make sure it includes all used fields)
 export interface Category {
@@ -69,15 +71,27 @@ const [freeCharactersUsed, setFreeCharactersUsed] = useState<string[]>([]); // T
       console.log('%c HomeScreen unmounted', 'background: #000; color: #ff6b6b; font-size: 12px;');
     };
   }, [user, isSubscribed, credits]);
+  useEffect(() => {
+      // // Corrected Superwall configuration
+      Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
+      console.log('RevenueCat Initialized successfully');
+    }, []);
 
-  const handleSubscribe = () => {
-       Superwall.shared.register({
-        placement: "campaign_trigger",
-        feature: () => {
-          // navigation.startWorkout()
-          console.log("first workout");
-        },
-      })
+  const handleSubscribe = async() => {
+    navigation.navigate('SubscriptionScreen');
+    // console.log('[HomeScreen] Subscribe button pressed');
+      
+    // try {
+    //   console.log("try")
+    //  await  <RevenueCatUI.Paywall 
+    //       onDismiss={() => {
+    //         // Dismiss the paywall, i.e. remove the view, navigate to another screen, etc.
+    //         // Will be called when the close button is pressed (if enabled) or when a purchase succeeds.
+    //       }}
+    //     />
+    // } catch (error) {
+    //   console.log(error)
+    // }
     };
 
   const getWelcomeMessage = () => {

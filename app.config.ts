@@ -13,6 +13,9 @@ export default {
   name: "Fantasy AI",
   version: "1.0.0",
   extra: {
+    "eas": {
+        "projectId": "518dbf1d-122d-4f86-9940-1ef2f1137a2e"
+      },
     supabaseUrl,  // Use the variables we defined above
     supabaseKey,
   },
