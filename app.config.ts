@@ -11,7 +11,7 @@ console.info("[app.config] SUPABASE_ANON_KEY set:", !!supabaseKey);
 
 export default {
   name: "Fantasy AI",
-  version: "1.0.0",
+  version: "1.0.1",
   extra: {
     "eas": {
         "projectId": "518dbf1d-122d-4f86-9940-1ef2f1137a2e"
@@ -36,7 +36,7 @@ export default {
   ],
   android: {
     package: "com.fantasyai.app",
-    versionCode: 1,
+    versionCode: 4,
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#FFFFFF"

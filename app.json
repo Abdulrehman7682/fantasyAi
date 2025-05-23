@@ -2,7 +2,7 @@
   "expo": {
     "name": "Fantasy AI",
     "slug": "fantasyai",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -29,6 +29,7 @@
       "permissions": [
         "com.android.vending.BILLING"
       ],
+       "versionCode": 4,
       "package": "com.fantasyai.app",
       "intentFilters": [
         {
