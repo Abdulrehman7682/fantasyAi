@@ -98,6 +98,7 @@ interface DateSeparatorItem {
 // Combined type for FlatList data
 type ListItem = UIMessage | DateSeparatorItem;
 
+
 interface ChatScreenProps {
   route: ChatScreenRouteProp;
 }
@@ -158,9 +159,9 @@ interface StagedMedia {
 type OpenRouterMessageContent =
   | string
   | Array<
-      | { type: 'text'; text: string }
-      | { type: 'image_url'; image_url: { url: string; detail?: 'auto' | 'low' | 'high' } }
-    >;
+    | { type: 'text'; text: string }
+    | { type: 'image_url'; image_url: { url: string; detail?: 'auto' | 'low' | 'high' } }
+  >;
 
 interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant';
@@ -219,7 +220,7 @@ function mapDbMessageToUIMessage(dbMsg: Message): UIMessage {
       type: 'message',
     };
   }
-  
+
   return {
     id: dbMsg.id ?? Crypto.randomUUID(),
     text: dbMsg.content ?? '[empty message]',
@@ -234,7 +235,7 @@ function mapDbMessageToUIMessage(dbMsg: Message): UIMessage {
  */
 function generateWelcomeMessage(char: Character): string {
   if (!char) return "Welcome! How can I help you today?";
-  
+
   if (char.greeting) return char.greeting;
   if (char.openingMessage) {
     const questionList = (char.exampleQuestions || []).map((q: string) => `• ${q}`).join('\n');
@@ -278,7 +279,7 @@ async function loadGuestHistory(characterId: number): Promise<UIMessage[]> {
  * Save guest chat history to AsyncStorage
  */
 async function saveGuestMessage(characterId: number, message: UIMessage): Promise<void> {
-   if (isNaN(characterId)) {
+  if (isNaN(characterId)) {
     console.warn("saveGuestMessage called with invalid characterId:", characterId);
     return;
   }
@@ -321,10 +322,10 @@ async function updateGuestChatSessionSummary(
         const parsed = JSON.parse(currentChatsRaw);
         // Ensure parsed data is an array of objects with expected structure
         if (Array.isArray(parsed) && parsed.every(item => typeof item === 'object' && item !== null && 'characterId' in item)) {
-           currentChats = parsed;
+          currentChats = parsed;
         } else {
-           console.warn("Invalid data found in guest chat storage, resetting.");
-           currentChats = [];
+          console.warn("Invalid data found in guest chat storage, resetting.");
+          currentChats = [];
         }
       } catch (parseError) {
         console.error("Error parsing guest chats:", parseError);
@@ -386,10 +387,10 @@ function formatDateSeparator(timestamp: number): string {
   if (messageDate.getTime() === yesterday.getTime()) {
     return 'Yesterday';
   }
-  return messageDate.toLocaleDateString(undefined, { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return messageDate.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 }
 
@@ -437,8 +438,8 @@ function addDateSeparators(messagesToSort: ListItem[]): ListItem[] {
 const TypingIndicator = React.memo(() => {
   const { colors } = useTheme();
   const yAnims = useRef([
-    new Animated.Value(0), 
-    new Animated.Value(0), 
+    new Animated.Value(0),
+    new Animated.Value(0),
     new Animated.Value(0)
   ]).current;
 
@@ -506,9 +507,9 @@ const TypingIndicator = React.memo(() => {
  */
 const TypingIndicatorDisplay = React.memo(({ character }: TypingIndicatorDisplayProps) => {
   const { colors } = useTheme();
-  
+
   if (!character) return null;
-  
+
   const avatarSource = getAvatarSource(character.avatar);
 
   const styles = useMemo(() => StyleSheet.create({
@@ -984,10 +985,10 @@ const ChatInput = React.memo(({
           ]}
         >
           {showMicButton ? (
-            <Ionicons 
-              name={isRecording ? "stop-circle-outline" : "mic-outline"} 
-              size={24} 
-              color={iconColor} 
+            <Ionicons
+              name={isRecording ? "stop-circle-outline" : "mic-outline"}
+              size={24}
+              color={iconColor}
             />
           ) : (
             <Animated.View style={{ transform: [{ scale: sendButtonScale }] }}>
@@ -1153,10 +1154,14 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false); // <-- Add state for keyboard visibility
   const isMounted = useRef(true); // <-- Add isMounted ref
-
+  const [messagesCount, setMessagesCount] = useState(0); // <-- Track total messages count
+  const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
+  
+  // let userSubscribed: boolean = false; 
   const flatListRef = useRef<FlatList>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const sendButtonScale = useRef(new Animated.Value(1)).current;
+  const GUEST_LIMIT = 3;
 
   // Derive iconName from the character state
   const characterIconName = useMemo(() => {
@@ -1172,7 +1177,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const scrollToBottom = useCallback((animated = true) => {
     // Add a slight delay to ensure layout is complete before scrolling
     setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated });
+      flatListRef.current?.scrollToEnd({ animated });
     }, 50);
   }, []);
 
@@ -1181,12 +1186,12 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     if (isGuest && character) {
       const charId = Number(character.id);
       if (!isNaN(charId)) {
-          const countStr = await AsyncStorage.getItem(`guestMessageCount_${charId}`);
-          if (isMounted.current) {
-             setGuestMessageCount(countStr ? parseInt(countStr, 10) : 0);
-          }
+        const countStr = await AsyncStorage.getItem(`guestMessageCount_${charId}`);
+        if (isMounted.current) {
+          setGuestMessageCount(countStr ? parseInt(countStr, 10) : 0);
+        }
       } else {
-          console.warn("Cannot load guest message count due to invalid character ID:", character.id);
+        console.warn("Cannot load guest message count due to invalid character ID:", character.id);
       }
     }
   }, [isGuest, character]);
@@ -1231,9 +1236,9 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     if (!status.isRecording) {
       // If recording stops unexpectedly, ensure state is updated
       if (recording) { // Check if we thought we were recording
-         console.warn("Recording stopped unexpectedly");
-         setRecording(null);
-         setIsRecording(false);
+        console.warn("Recording stopped unexpectedly");
+        setRecording(null);
+        setIsRecording(false);
       }
     }
     // Update UI based on status if needed (e.g., show recording duration)
@@ -1251,7 +1256,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     try {
       await recording.stopAndUnloadAsync();
       await Audio.setAudioModeAsync({ // Reset audio mode
-         allowsRecordingIOS: false,
+        allowsRecordingIOS: false,
       });
       const uri = recording.getURI();
       console.log('Recording stopped and stored at', uri);
@@ -1262,23 +1267,23 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           encoding: FileSystem.EncodingType.Base64,
         });
         if (isMounted.current) {
-            setStagedMedia({
-              uri: uri,
-              base64: base64,
-              type: 'audio',
-              mimeType: 'audio/m4a', // Adjust if using a different format
-            });
+          setStagedMedia({
+            uri: uri,
+            base64: base64,
+            type: 'audio',
+            mimeType: 'audio/m4a', // Adjust if using a different format
+          });
         }
       } else if (!save) {
-         console.log("Recording discarded.");
+        console.log("Recording discarded.");
       }
     } catch (error) {
       console.error('Failed to stop recording', error);
       Alert.alert("Error", "Could not stop recording properly.");
     } finally {
-       if (isMounted.current) {
-           setRecording(null); // Clear the recording object in state
-       }
+      if (isMounted.current) {
+        setRecording(null); // Clear the recording object in state
+      }
     }
   }, [recording, setIsRecording, setRecording, setStagedMedia]); // <-- Added dependencies
 
@@ -1297,12 +1302,12 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
       console.log('Starting recording..');
       const { recording } = await Audio.Recording.createAsync(
-         Audio.RecordingOptionsPresets.HIGH_QUALITY,
-         onRecordingStatusUpdate // Pass the status update handler
+        Audio.RecordingOptionsPresets.HIGH_QUALITY,
+        onRecordingStatusUpdate // Pass the status update handler
       );
       if (isMounted.current) {
-          setRecording(recording);
-          setIsRecording(true);
+        setRecording(recording);
+        setIsRecording(true);
       }
       console.log('Recording started');
 
@@ -1310,8 +1315,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error('Failed to start recording', err);
       Alert.alert("Error", "Could not start recording.");
       if (isMounted.current) {
-          setIsRecording(false); // Ensure state is correct on error
-          setRecording(null);
+        setIsRecording(false); // Ensure state is correct on error
+        setRecording(null);
       }
     }
   }, [setIsRecording, setRecording, onRecordingStatusUpdate]); // <-- Added dependencies
@@ -1328,41 +1333,41 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   }, [isRecording, startRecording, stopRecording]); // <-- Added dependencies
 
   const pickImage = useCallback(async () => {
-     try {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permissionResult.granted) {
-          Alert.alert("Permission required", "You need to grant permission to access the photo library.");
-          return;
-        }
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert("Permission required", "You need to grant permission to access the photo library.");
+        return;
+      }
 
-        const pickerResult = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 0.6, // Reduce quality slightly for faster uploads
-          base64: true, // Request base64 data
-        });
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.6, // Reduce quality slightly for faster uploads
+        base64: true, // Request base64 data
+      });
 
-        if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
-          const asset = pickerResult.assets[0];
-          if (asset.uri && asset.base64) {
-             console.log("Image picked:", asset.uri.substring(0, 100) + "...");
-             if (isMounted.current) {
-                 setStagedMedia({
-                   uri: asset.uri,
-                   base64: asset.base64,
-                   type: 'image',
-                   mimeType: asset.mimeType || 'image/jpeg', // Get mimeType if available
-                 });
-             }
-          } else {
-             console.warn("Picked image missing URI or base64 data");
+      if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+        const asset = pickerResult.assets[0];
+        if (asset.uri && asset.base64) {
+          console.log("Image picked:", asset.uri.substring(0, 100) + "...");
+          if (isMounted.current) {
+            setStagedMedia({
+              uri: asset.uri,
+              base64: asset.base64,
+              type: 'image',
+              mimeType: asset.mimeType || 'image/jpeg', // Get mimeType if available
+            });
           }
+        } else {
+          console.warn("Picked image missing URI or base64 data");
         }
-     } catch (error) {
-        console.error("Error picking image:", error);
-        Alert.alert("Error", "Could not pick image.");
-     }
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Could not pick image.");
+    }
   }, [setStagedMedia]); // <-- Added dependency
 
   /**
@@ -1374,7 +1379,45 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
   /**
    * Handle sending a message
+   * 
    */
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('message_and_subscription')
+          .select('message, user_id')
+          .eq('user_id', user!.id)
+        console.log("data of user messages and subscription status:", data);
+        console.error("error of user messages and subscription status:", error);
+
+        setMessagesCount(data?.length || 0); // Get the number of messages
+        
+
+
+
+
+      } catch (error) {
+        console.error("Error fetching user messages and subscription status:", error);
+      }
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('is_subscribed, user_id')
+        .eq('user_id', user!.id)
+      console.log("data of subscription status:", data);
+      if (data) {
+        setUserSubscribed(data[0]?.is_subscribed);
+      }
+      setUserSubscribed(false);
+    }
+    fetchMessages();
+    console.log( "messagesCount:", messagesCount, "userSubscribed:", userSubscribed);
+    console.log("userid", user!.id)
+
+
+  },[messagesCount]);
+
+
   const handleSend = useCallback(async () => {
     if (!character) return;
 
@@ -1392,12 +1435,12 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
     const characterIdNum = Number(character.id); // Ensure ID is number
     if (isNaN(characterIdNum)) {
-        console.error("Invalid character ID for sending message:", character.id);
-        if (isMounted.current) {
-            setError("Invalid character ID.");
-            setIsAISpeaking(false); // Reset speaking state if error occurs early
-        }
-        return;
+      console.error("Invalid character ID for sending message:", character.id);
+      if (isMounted.current) {
+        setError("Invalid character ID.");
+        setIsAISpeaking(false); // Reset speaking state if error occurs early
+      }
+      return;
     }
 
     const userMessage: UIMessage = {
@@ -1412,11 +1455,11 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
     // Optimistically add user message
     if (isMounted.current) {
-        setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
-        setInputText('');
-        setStagedMedia(null);
-        scrollToBottom();
-        setIsAISpeaking(true); // Set AI speaking *after* user message is added
+      setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
+      setInputText('');
+      setStagedMedia(null);
+      scrollToBottom();
+      setIsAISpeaking(true); // Set AI speaking *after* user message is added
     }
 
     // Increment guest count and save user message for guests
@@ -1426,12 +1469,51 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       await AsyncStorage.setItem(`guestMessageCount_${characterIdNum}`, newCount.toString());
       await saveGuestMessage(characterIdNum, userMessage); // <-- Save user message for guest
     }
+    // getting user messages and subscription status before sending messages
+
+
+
+
+
+
 
     try {
+      setMessagesCount(prevCount => prevCount + 1); // Increment messages count
       // Send message to DB (if logged in)
       if (!isGuest && user) {
-        await sendMessageToDb(user.id, characterIdNum, textToSend, 'user', mediaToSend?.uri, mediaToSend?.type);
+        if (userSubscribed === false && messagesCount >= 3) {
+          Alert.alert(
+            "Subscription Required",
+            "You need to subscribe to send more messages.",
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
+              },
+              {
+                text: "Subscribe",
+                onPress: () => {
+                  // Navigate to your subscription screen here
+                  navigation.navigate('SubscriptionScreen');
+                },
+              },
+            ],
+            { cancelable: true }
+          );
+
+
+        } else {
+          const { data, error } = await supabase
+            .from('message_and_subscription')
+            .insert([
+              { user_id: user.id, message: textToSend },
+            ])
+            .select()
+          console.log("first insert result:", data, error);
+          await sendMessageToDb(user.id, characterIdNum, textToSend, 'user', mediaToSend?.uri, mediaToSend?.type);
+        }
       }
+
 
       // Prepare context for AI
       let currentMessages: ListItem[] = [];
@@ -1525,16 +1607,16 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
       // Update guest chat session summary AND save AI message for guests
       if (isGuest) {
-         // *** Add logging here to check character object ***
-         console.log(`[ChatScreen - handleSend] Updating guest summary for ID ${characterIdNum}. Character object:`, character);
-         console.log(`[ChatScreen - handleSend] -> Passing category: ${character.category}`);
-         await updateGuestChatSessionSummary( // <-- Use the correct function name for summary
-            characterIdNum,
-            character.name,
-            aiText,
-            character.category // <-- Pass category
-         );
-         await saveGuestMessage(characterIdNum, aiMessage); // <-- Save AI message for guest
+        // *** Add logging here to check character object ***
+        console.log(`[ChatScreen - handleSend] Updating guest summary for ID ${characterIdNum}. Character object:`, character);
+        console.log(`[ChatScreen - handleSend] -> Passing category: ${character.category}`);
+        await updateGuestChatSessionSummary( // <-- Use the correct function name for summary
+          characterIdNum,
+          character.name,
+          aiText,
+          character.category // <-- Pass category
+        );
+        await saveGuestMessage(characterIdNum, aiMessage); // <-- Save AI message for guest
       }
 
     } catch (err) {
@@ -1575,7 +1657,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       await newSound.playAsync();
 
       // Use the directly imported AVPlaybackStatus type
-      newSound.setOnPlaybackStatusUpdate(async (status: AVPlaybackStatus) => {
+      newSound.setOnPlayba;
+      ckStatusUpdate(async (status: AVPlaybackStatus) => {
         if (!isMounted.current) return; // Check mount status in callback
         if (status.isLoaded) {
           if (status.didJustFinish) {
@@ -1602,23 +1685,23 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const loadMessages = useCallback(async () => {
     // Guard against missing character or user/guest status
     if (!character || (!user && !isGuest)) {
-        console.warn("loadMessages called without character or user/guest status.");
-        if (isMounted.current) setIsLoading(false);
-        return;
+      console.warn("loadMessages called without character or user/guest status.");
+      if (isMounted.current) setIsLoading(false);
+      return;
     }
     if (isMounted.current) {
-        setIsLoading(true);
-        setError(null);
+      setIsLoading(true);
+      setError(null);
     }
 
     const characterIdNum = Number(character.id);
     if (isNaN(characterIdNum)) {
-        console.error("Invalid character ID for loading messages:", character.id);
-        if (isMounted.current) {
-            setError("Invalid character ID.");
-            setIsLoading(false);
-        }
-        return;
+      console.error("Invalid character ID for loading messages:", character.id);
+      if (isMounted.current) {
+        setError("Invalid character ID.");
+        setIsLoading(false);
+      }
+      return;
     }
 
 
@@ -1641,7 +1724,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             );
             scrollToBottom();
           } else {
-             console.warn("Received invalid or non-AI message via subscription, ignoring:", newMessage);
+            console.warn("Received invalid or non-AI message via subscription, ignoring:", newMessage);
           }
         });
 
@@ -1650,20 +1733,20 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         console.log(`[ChatScreen] Guest mode: Loading messages for character ${characterIdNum} from AsyncStorage.`);
         loadedMessages = await loadGuestHistory(characterIdNum); // <-- Load guest history
       } else {
-         console.warn("loadMessages: Neither logged in nor guest mode detected.");
+        console.warn("loadMessages: Neither logged in nor guest mode detected.");
       }
 
       // Generate welcome message (only if no history exists or for specific logic)
       const welcomeNeeded = loadedMessages.length === 0; // Example: Show welcome only if history is empty
       const initialMessages: UIMessage[] = [];
       if (welcomeNeeded) {
-          initialMessages.push({
-            id: 'welcome-' + character.id,
-            text: generateWelcomeMessage(character),
-            sender: 'ai',
-            timestamp: Date.now() - 1000, // Slightly before load time
-            type: 'message',
-          });
+        initialMessages.push({
+          id: 'welcome-' + character.id,
+          text: generateWelcomeMessage(character),
+          sender: 'ai',
+          timestamp: Date.now() - 1000, // Slightly before load time
+          type: 'message',
+        });
       }
 
 
@@ -1692,8 +1775,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     // ... (existing mount, loadMessages, loadGuestMessageCount, keyboard listeners setup) ...
     isMounted.current = true;
     if (character) {
-        loadMessages();
-        loadGuestMessageCount();
+      loadMessages();
+      loadGuestMessageCount();
     }
 
     const keyboardDidShowListener = Keyboard.addListener(
@@ -1719,8 +1802,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
       if (recording) {
-         console.log("Unmounting: Stopping recording...");
-         stopRecording(false);
+        console.log("Unmounting: Stopping recording...");
+        stopRecording(false);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1751,7 +1834,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* Use chatTheme state variable */} 
+      {/* Use chatTheme state variable */}
       {chatTheme.background ? (
         <ImageBackground
           source={chatTheme.background}
@@ -1810,16 +1893,16 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           </KeyboardAvoidingView>
         </ImageBackground>
       ) : (
-         // ... (existing structure for no background) ...
-         <View style={{ flex: 1, backgroundColor: colors.background }}>
+        // ... (existing structure for no background) ...
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
           <ChatHeader character={character} handleBack={handleBack} />
           {isLoading ? (
-             <View style={styles.loadingContainer}>
+            <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
               <Text style={[styles.loadingText, { color: colors.secondaryText }]}>Loading chat...</Text>
             </View>
           ) : error ? (
-             <View style={styles.errorContainer}>
+            <View style={styles.errorContainer}>
               <Ionicons name="warning-outline" size={40} color={colors.error} />
               <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
               <Pressable onPress={loadMessages} style={[styles.retryButton, { backgroundColor: colors.primary }]}>

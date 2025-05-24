@@ -1,12 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  Dimensions,
+  Alert,
+} from 'react-native';
 import Purchases from 'react-native-purchases';
 import RevenueCatUI from 'react-native-purchases-ui';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../contexts/AuthContext'; // Update path as needed
+
+const { width } = Dimensions.get('window');
 
 export default function SubscribeScreen() {
   const [showPaywall, setShowPaywall] = useState(false);
   const navigation = useNavigation();
+  const { user, isGuest } = useAuth();
 
   useEffect(() => {
     Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
@@ -14,93 +27,126 @@ export default function SubscribeScreen() {
   }, []);
 
   const handleSubscribe = () => {
-    console.log('[SubscribeScreen] Subscribe button pressed');
-    setShowPaywall(true);
+    if (isGuest) {
+      Alert.alert(
+        'Login Required',
+        'You need to login before buying a subscription.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Login',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ],
+        { cancelable: true }
+      );
+    } else {
+      setShowPaywall(true);
+    }
   };
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
+  if (showPaywall) {
+    return (
+      <RevenueCatUI.Paywall
+        onDismiss={() => {
+          setShowPaywall(false);
+          console.log('Paywall dismissed');
+        }}
+      />
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      {!showPaywall ? (
-        <>
-          <Text style={styles.title}>You're out of free messages</Text>
-          <Text style={styles.subtitle}>
-            To continue chatting with AI characters, please subscribe to unlock unlimited messages.
-          </Text>
+    <LinearGradient colors={['#e0c3fc', '#8ec5fc']} style={styles.gradient}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.card}>
+        <Text style={styles.title}>Free Limit Reached</Text>
+        <Text style={styles.description}>
+          You’ve used all your free messages. To continue chatting with AI characters,
+          {isGuest ? ' please log in first and subscribe.' : ' subscribe to unlock unlimited access.'}
+        </Text>
 
-          <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
-            <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+          <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
-            <Text style={styles.goBackButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <RevenueCatUI.Paywall
-          onDismiss={() => {
-            setShowPaywall(false);
-            console.log('Paywall dismissed');
-          }}
-        />
-      )}
-    </View>
+        <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
+          <Text style={styles.goBackButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  gradient: {
     flex: 1,
-    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  card: {
+    width: width * 0.9,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
     padding: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
     color: '#1e1e2f',
-    textAlign: 'center',
     marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
     textAlign: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 10,
+  },
+  description: {
+    fontSize: 16,
+    color: '#444',
+    textAlign: 'center',
+    marginBottom: 28,
+    lineHeight: 22,
   },
   subscribeButton: {
-    backgroundColor: '#1e40af',
+    backgroundColor: '#4f46e5',
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 14,
-    marginBottom: 20,
-    shadowColor: '#1e40af',
+    marginBottom: 16,
+    width: '100%',
+    alignItems: 'center',
+    shadowColor: '#4f46e5',
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 6,
   },
   subscribeButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
   },
   goBackButton: {
     paddingVertical: 12,
-    paddingHorizontal: 20,
     borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
+    borderColor: '#aaa',
     borderWidth: 1,
-    borderColor: '#999',
   },
   goBackButtonText: {
     color: '#333',
-    fontSize: 15,
+    fontSize: 16,
   },
 });
+
+
 
 
 
