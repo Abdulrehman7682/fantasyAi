@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Purchases from 'react-native-purchases';
 import RevenueCatUI from 'react-native-purchases-ui';
+import { useNavigation } from '@react-navigation/native';
 
 export default function SubscribeScreen() {
   const [showPaywall, setShowPaywall] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
@@ -16,21 +18,25 @@ export default function SubscribeScreen() {
     setShowPaywall(true);
   };
 
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
   return (
     <View style={styles.container}>
       {!showPaywall ? (
         <>
-          <Text style={styles.title}>Unlock Premium Features</Text>
-          <Image
-            source={{ uri: 'https://i.imgur.com/H9GAGwf.png' }}
-            style={styles.image}
-            resizeMode="contain"
-          />
-          <Text style={styles.description}>
-            Get unlimited access to all AI characters and enjoy priority support.
+          <Text style={styles.title}>You're out of free messages</Text>
+          <Text style={styles.subtitle}>
+            To continue chatting with AI characters, please subscribe to unlock unlimited messages.
           </Text>
+
           <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
             <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
+            <Text style={styles.goBackButtonText}>Go Back</Text>
           </TouchableOpacity>
         </>
       ) : (
@@ -48,45 +54,54 @@ export default function SubscribeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f8ff',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    fontSize: 24,
+    fontWeight: '700',
     color: '#1e1e2f',
     textAlign: 'center',
+    marginBottom: 12,
   },
-  image: {
-    width: '100%',
-    height: 200,
-    marginBottom: 20,
-  },
-  description: {
+  subtitle: {
     fontSize: 16,
-    color: '#4a4a68',
+    color: '#555',
     textAlign: 'center',
     marginBottom: 30,
+    paddingHorizontal: 10,
   },
   subscribeButton: {
-    backgroundColor: '#5b67f3',
+    backgroundColor: '#1e40af',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 12,
-    shadowColor: '#5b67f3',
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    borderRadius: 14,
+    marginBottom: 20,
+    shadowColor: '#1e40af',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
     elevation: 6,
   },
   subscribeButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
+  goBackButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#999',
+  },
+  goBackButtonText: {
+    color: '#333',
+    fontSize: 15,
+  },
 });
+
 
 
 

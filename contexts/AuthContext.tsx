@@ -6,7 +6,6 @@ import * as WebBrowser from 'expo-web-browser';
 // Removed unused Platform import
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import Superwall from '@superwall/react-native-superwall'; // Import Superwall
 // Removed loggingService import as it's not confirmed to exist/be exported
 
 // Constants for guest message tracking

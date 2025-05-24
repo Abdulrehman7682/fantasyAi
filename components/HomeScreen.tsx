@@ -23,6 +23,9 @@ export interface Category {
   group: string;
   subTasks?: string[];
 }
+//for handlepress First, define the type for your handler function
+type SubscribeHandler = () => Promise<void>;
+
 
 // Define the Character type expected by ChatScreen (align with ChatScreen.tsx and navigation.ts)
 interface ChatCharacter {
@@ -57,83 +60,85 @@ const HomeScreen = () => {
   //Add M
   // const [freeCharactersUsed, setFreeCharactersUsed] = useState(0);
   // Inside your component:
-const [freeCharactersUsed, setFreeCharactersUsed] = useState<string[]>([]); // Track character IDs
+  const [freeCharactersUsed, setFreeCharactersUsed] = useState<string[]>([]); // Track character IDs
 
   useEffect(() => {
     console.log('%c HomeScreen mounted', 'background: #000; color: #bada55; font-size: 12px;');
-    console.log('%c User info:', 'color: #3498db; font-weight: bold;', { 
+    console.log('%c User info:', 'color: #3498db; font-weight: bold;', {
       user: user ? 'Logged In' : 'Not Logged In',
       isSubscribed: isSubscribed || false,
       credits: credits || 0
     });
-    
+
     return () => {
       console.log('%c HomeScreen unmounted', 'background: #000; color: #ff6b6b; font-size: 12px;');
     };
   }, [user, isSubscribed, credits]);
   useEffect(() => {
-      // // Corrected Superwall configuration
-      Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
-      console.log('RevenueCat Initialized successfully');
-    }, []);
+    // // Corrected Superwall configuration
+    Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
+    console.log('RevenueCat Initialized successfully');
+  }, []);
 
-  const handleSubscribe = async() => {
-    navigation.navigate('SubscriptionScreen');
-    // console.log('[HomeScreen] Subscribe button pressed');
-      
-    // try {
-    //   console.log("try")
-    //  await  <RevenueCatUI.Paywall 
-    //       onDismiss={() => {
-    //         // Dismiss the paywall, i.e. remove the view, navigate to another screen, etc.
-    //         // Will be called when the close button is pressed (if enabled) or when a purchase succeeds.
-    //       }}
-    //     />
-    // } catch (error) {
-    //   console.log(error)
-    // }
-    };
+  const handleSubscribe = async () => {
+    // navigation.navigate('SubscriptionScreen');
+    console.log('[HomeScreen] Subscribe button pressed');
+// Your existing handleSubscribe function with proper typing
+// const handleSubscribe: SubscribeHandler = async () => {
+//     try {
+//       console.log("try")
+//       await <RevenueCatUI.Paywall
+//         onDismiss={() => {
+//           // Dismiss the paywall, i.e. remove the view, navigate to another screen, etc.
+//           // Will be called when the close button is pressed (if enabled) or when a purchase succeeds.
+//         }}
+//       />
+//     } catch (error) {
+//       console.log(error)
+//     }
+  };
 
   const getWelcomeMessage = () => {
     return "Welcome back";
   };
- 
-  // Load previously used characters on component mount
-useEffect(() => {
-  const loadUsedCharacters = async () => {
-    try {
-      const storedChars = await AsyncStorage.getItem('freeCharactersUsed');
-      if (storedChars) {
-        setFreeCharactersUsed(JSON.parse(storedChars));
-      }
-    } catch (error) {
-      console.error('Failed to load used characters:', error);
-    }
-  };
-  loadUsedCharacters();
-}, []);
 
-  const handleCategoryPress = async (category: Category) => {
+  // Load previously used characters on component mount
+  useEffect(() => {
+    const loadUsedCharacters = async () => {
+      try {
+        const storedChars = await AsyncStorage.getItem('freeCharactersUsed');
+        if (storedChars) {
+          setFreeCharactersUsed(JSON.parse(storedChars));
+        }
+      } catch (error) {
+        console.error('Failed to load used characters:', error);
+      }
+    };
+    loadUsedCharacters();
+  }, []);
+
+  const handleCategoryPress = async (category: Category, subscribeHandler: SubscribeHandler) => {
     console.log(`[HomeScreen] Category tile pressed: ${category.title} (ID: ${category.id})`);
-      // ⭐ Check before proceeding
-       // ⭐ Check subscription status and free usage
-  if (!isSubscribed) {
-    // If already used 3 unique characters (and this is a new one)
-    if (freeCharactersUsed.length >= 3 && !freeCharactersUsed.includes(category.id)) {
-      Alert.alert(
-        "Subscription Required",
-        "You've reached the free limit (3 characters). Subscribe to chat with more!",
-        [
-          { text: "Cancel", style: "cancel" },
-          { 
-            text: "Subscribe", 
-            onPress: () => handleSubscribe() 
-          }
-        ]
-      );
-      return; // Block further action
+    // ⭐ Check before proceeding
+    // ⭐ Check subscription status and free usage
+    if (!isSubscribed) {
+      // If already used 3 unique characters (and this is a new one)
+      if (freeCharactersUsed.length >= 3 && !freeCharactersUsed.includes(category.id)) {
+        navigation.navigate('SubscriptionScreen');
+        // Alert.alert(
+        //   "Subscription Required",
+        //   "You've reached the free limit (3 characters). Subscribe to chat with more!",
+        //   [
+        //     { text: "Cancel", style: "cancel" },
+        //     {
+        //       text: "Subscribe",
+        //       onPress: () => subscribeHandler(),
+        //     }
+        //   ]
+        // );
+        return; // Block further action
+      }
     }
-  }
     setIsLoading(true);
     try {
       // Use the category.id as the unique identifier for the assistant
@@ -203,7 +208,7 @@ useEffect(() => {
         const updatedUsedChars = [...freeCharactersUsed, category.id];
         setFreeCharactersUsed(updatedUsedChars);
         await AsyncStorage.setItem('freeCharactersUsed', JSON.stringify(updatedUsedChars));
-       // await AsyncStorage.removeItem('freeCharactersUsed');
+        // await AsyncStorage.removeItem('freeCharactersUsed');
 
       }
       console.info(`[HomeScreen] Navigating to Chat with Assistant ID: ${characterToPass.id}, Name: ${characterToPass.name}`);
@@ -311,7 +316,7 @@ useEffect(() => {
           subtitle={category.description}
           iconName={category.iconName} // This should be correct based on the categories array
           colors={category.colors}
-          onPress={() => handleCategoryPress(category)}
+          onPress={() => handleCategoryPress(category, handleSubscribe)}
           onPressIn={() => console.log(`Category tile pressed in: ${category.title}`)}
           onPressOut={() => console.log(`Category tile pressed out: ${category.title}`)}
         />
@@ -319,8 +324,8 @@ useEffect(() => {
     );
   };
 
-  const filteredCategories = selectedCategory === 'All' 
-    ? categories 
+  const filteredCategories = selectedCategory === 'All'
+    ? categories
     : categories.filter(cat => cat.group === selectedCategory);
 
   const renderCategoryFilter = (group: string) => {
@@ -366,17 +371,17 @@ useEffect(() => {
               </Text>
             )}
           </View>
-          
+
           <View style={styles.filterContainer}>
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.filterScroll}
             >
               {categoryGroups.map(renderCategoryFilter)}
             </ScrollView>
           </View>
-          
+
           <View style={styles.tilesGrid}>
             {filteredCategories.map(renderCategoryTile)}
           </View>
