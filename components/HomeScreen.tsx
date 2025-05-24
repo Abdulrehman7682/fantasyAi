@@ -60,7 +60,7 @@ const HomeScreen = () => {
   //Add M
   // const [freeCharactersUsed, setFreeCharactersUsed] = useState(0);
   // Inside your component:
-  const [freeCharactersUsed, setFreeCharactersUsed] = useState<string[]>([]); // Track character IDs
+  // const [freeCharactersUsed, setFreeCharactersUsed] = useState<string[]>([]); // Track character IDs
 
   useEffect(() => {
     console.log('%c HomeScreen mounted', 'background: #000; color: #bada55; font-size: 12px;');
@@ -103,42 +103,42 @@ const HomeScreen = () => {
   };
 
   // Load previously used characters on component mount
-  useEffect(() => {
-    const loadUsedCharacters = async () => {
-      try {
-        const storedChars = await AsyncStorage.getItem('freeCharactersUsed');
-        if (storedChars) {
-          setFreeCharactersUsed(JSON.parse(storedChars));
-        }
-      } catch (error) {
-        console.error('Failed to load used characters:', error);
-      }
-    };
-    loadUsedCharacters();
-  }, []);
+  // useEffect(() => {
+  //   const loadUsedCharacters = async () => {
+  //     try {
+  //       const storedChars = await AsyncStorage.getItem('freeCharactersUsed');
+  //       if (storedChars) {
+  //         setFreeCharactersUsed(JSON.parse(storedChars));
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to load used characters:', error);
+  //     }
+  //   };
+  //   loadUsedCharacters();
+  // }, []);
 
   const handleCategoryPress = async (category: Category, subscribeHandler: SubscribeHandler) => {
     console.log(`[HomeScreen] Category tile pressed: ${category.title} (ID: ${category.id})`);
     // ⭐ Check before proceeding
     // ⭐ Check subscription status and free usage
-    if (!isSubscribed) {
-      // If already used 3 unique characters (and this is a new one)
-      if (freeCharactersUsed.length >= 3 && !freeCharactersUsed.includes(category.id)) {
-        navigation.navigate('SubscriptionScreen');
-        // Alert.alert(
-        //   "Subscription Required",
-        //   "You've reached the free limit (3 characters). Subscribe to chat with more!",
-        //   [
-        //     { text: "Cancel", style: "cancel" },
-        //     {
-        //       text: "Subscribe",
-        //       onPress: () => subscribeHandler(),
-        //     }
-        //   ]
-        // );
-        return; // Block further action
-      }
-    }
+    // if (!isSubscribed) {
+    //   // If already used 3 unique characters (and this is a new one)
+    //   if (freeCharactersUsed.length >= 3 && !freeCharactersUsed.includes(category.id)) {
+    //     navigation.navigate('SubscriptionScreen');
+    //     // Alert.alert(
+    //     //   "Subscription Required",
+    //     //   "You've reached the free limit (3 characters). Subscribe to chat with more!",
+    //     //   [
+    //     //     { text: "Cancel", style: "cancel" },
+    //     //     {
+    //     //       text: "Subscribe",
+    //     //       onPress: () => subscribeHandler(),
+    //     //     }
+    //     //   ]
+    //     // );
+    //     return; // Block further action
+    //   }
+    // }
     setIsLoading(true);
     try {
       // Use the category.id as the unique identifier for the assistant
@@ -204,13 +204,13 @@ const HomeScreen = () => {
       //   if (!isSubscribed) {
       //     setFreeCharactersUsed(prev => prev + 1);
       //   }
-      if (!isSubscribed && !freeCharactersUsed.includes(category.id)) {
-        const updatedUsedChars = [...freeCharactersUsed, category.id];
-        setFreeCharactersUsed(updatedUsedChars);
-        await AsyncStorage.setItem('freeCharactersUsed', JSON.stringify(updatedUsedChars));
-        // await AsyncStorage.removeItem('freeCharactersUsed');
+      // if (!isSubscribed && !freeCharactersUsed.includes(category.id)) {
+      //   const updatedUsedChars = [...freeCharactersUsed, category.id];
+      //   setFreeCharactersUsed(updatedUsedChars);
+      //   await AsyncStorage.setItem('freeCharactersUsed', JSON.stringify(updatedUsedChars));
+      //   // await AsyncStorage.removeItem('freeCharactersUsed');
 
-      }
+      // }
       console.info(`[HomeScreen] Navigating to Chat with Assistant ID: ${characterToPass.id}, Name: ${characterToPass.name}`);
       console.debug("[HomeScreen] Character data being passed:", characterToPass);
       navigation.navigate('Chat', { character: characterToPass });
