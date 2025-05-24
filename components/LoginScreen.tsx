@@ -111,6 +111,17 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
     console.log("GoogleSignin configured")
   }, [])
 
+  const createSubscriptionUser = async(userId: string) => {
+    const { data, error } = await supabase
+  .from('subscriptions')
+  .insert([
+    { user_id: userId, is_subscribed: false },
+  ])
+  .select('user_id, is_subscribed');
+  console.log("createSubscriptionUser data", data)
+  }
+
+
   const signInWithGoogle = async () => { 
     console.log("signInWithGoogle")
     try {
@@ -124,7 +135,9 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
           provider: 'google',
           token: userInfo.data.idToken,
         })
-        console.log("data", data)
+        createSubscriptionUser(data.session?.user.id!);
+
+        console.log("data", data.session?.user.id)
         console.log("error", error)
             if (data?.user) {
         // ✅ Save user data to AsyncStorage

@@ -13,6 +13,7 @@ import RevenueCatUI from 'react-native-purchases-ui';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext'; // Update path as needed
+import { supabase } from 'utils/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -35,7 +36,7 @@ export default function SubscribeScreen() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Login',
-            onPress: () => navigation.navigate('Login'),
+            onPress: () => navigation.navigate('SubscriptionScreen'),
           },
         ],
         { cancelable: true }
@@ -44,6 +45,14 @@ export default function SubscribeScreen() {
       setShowPaywall(true);
     }
   };
+  const handleUpdateSubscriptionStatus = async () => {
+    const { data, error } = await supabase
+  .from('subscriptions')
+  .update({is_subscribed: true })
+  .eq('user_id', user!.id)
+  .select()
+  console.log("data from new" , data)
+  }
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -53,6 +62,11 @@ export default function SubscribeScreen() {
     return (
       <RevenueCatUI.Paywall
         onDismiss={() => {
+          setShowPaywall(false);
+          console.log('Paywall dismissed');
+        }}
+        onPurchaseCompleted={() => {
+          handleUpdateSubscriptionStatus();
           setShowPaywall(false);
           console.log('Paywall dismissed');
         }}
