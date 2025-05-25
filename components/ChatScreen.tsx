@@ -5,6 +5,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import { StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { startOfToday } from "date-fns";
+import Purchases from 'react-native-purchases';
 import {
   View,
   Text,
@@ -1407,8 +1409,9 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.log("data of subscription status:", data);
       if (data) {
         setUserSubscribed(data[0]?.is_subscribed);
-      }
+      }else{
       setUserSubscribed(false);
+      }
     }
     fetchMessages();
     console.log( "messagesCount:", messagesCount, "userSubscribed:", userSubscribed);
@@ -1455,11 +1458,9 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
     // Optimistically add user message
     if (isMounted.current) {
-      setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
       setInputText('');
       setStagedMedia(null);
       scrollToBottom();
-      setIsAISpeaking(true); // Set AI speaking *after* user message is added
     }
 
     // Increment guest count and save user message for guests
@@ -1477,42 +1478,119 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
 
 
+    // try {
+    //   setMessagesCount(prevCount => prevCount + 1); // Increment messages count
+    //   // Send message to DB (if logged in)
+    //   if (!isGuest && user) {
+    //     if (!userSubscribed && messagesCount >= 3) {
+    //        setIsAISpeaking(false); // Set AI speaking *after* user message is added
+    //       Alert.alert(
+    //         "Subscription Required",
+    //         "You need to subscribe to send more messages.",
+    //         [
+    //           {
+    //             text: "Cancel",
+    //             style: "cancel",
+    //           },
+    //           {
+    //             text: "Subscribe",
+    //             onPress: () => {
+    //               // Navigate to your subscription screen here
+    //               navigation.navigate('SubscriptionScreen');
+    //             },
+    //           },
+    //         ],
+    //         { cancelable: true }
+    //       );
+
+
+    //     } else {
+    //       const { data, error } = await supabase
+    //         .from('message_and_subscription')
+    //         .insert([
+    //           { user_id: user.id, message: textToSend },
+    //         ])
+    //         .select()
+    //          setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
+    //           setIsAISpeaking(true); // Set AI speaking *after* user message is added
+    //       console.log("first insert result:", data, error);
+    //       await sendMessageToDb(user.id, characterIdNum, textToSend, 'user', mediaToSend?.uri, mediaToSend?.type);
+    //     }
+    //   }
+
+
     try {
-      setMessagesCount(prevCount => prevCount + 1); // Increment messages count
-      // Send message to DB (if logged in)
-      if (!isGuest && user) {
-        if (userSubscribed === false && messagesCount >= 3) {
-          Alert.alert(
-            "Subscription Required",
-            "You need to subscribe to send more messages.",
-            [
-              {
-                text: "Cancel",
-                style: "cancel",
-              },
-              {
-                text: "Subscribe",
-                onPress: () => {
-                  // Navigate to your subscription screen here
-                  navigation.navigate('SubscriptionScreen');
-                },
-              },
-            ],
-            { cancelable: true }
-          );
+  setMessagesCount(prevCount => prevCount + 1); // Local state update
 
+  // Send message to DB (if logged in)
+  if (!isGuest && user) {
+    // Check subscription status from RevenueCat
+    // const customerInfo = await Purchases.getCustomerInfo();
+    // const isSubscribed = customerInfo.entitlements.active["your_entitlement_id"] !== undefined;
 
-        } else {
-          const { data, error } = await supabase
-            .from('message_and_subscription')
-            .insert([
-              { user_id: user.id, message: textToSend },
-            ])
-            .select()
-          console.log("first insert result:", data, error);
-          await sendMessageToDb(user.id, characterIdNum, textToSend, 'user', mediaToSend?.uri, mediaToSend?.type);
-        }
+    // Get message count
+    if (userSubscribed) {
+      // Subscribed user: allow 50 messages per day
+      const { data, error } = await supabase
+        .from("message_and_subscription")
+        .select("message", { count: "exact" })
+        .eq("user_id", user.id)
+        .gte("created_at", startOfToday().toISOString());
+
+      const todayMessageCount = data?.length || 0;
+      console.log("Today's message count:", todayMessageCount);
+
+      if (todayMessageCount >= 50) {
+        setIsAISpeaking(false);
+        //  try {
+        //   const customerInfo = await Purchases.getCustomerInfo();
+        //   console.log("customerInfo:", customerInfo);
+        // } catch (error) {
+        //   console.log("Error fetching customer info:", error);
+        // }
+        Alert.alert(
+          "Daily Limit Reached",
+          "You have reached your 50-message limit for today. Please try again tomorrow."
+        );
+        return;
       }
+
+    } else {
+      // Free user: allow only 3 lifetime messages
+      if (messagesCount >= 3) {
+        setIsAISpeaking(false);
+        Alert.alert(
+          "Subscription Required",
+          "You need to subscribe to send more messages.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Subscribe", onPress: () => navigation.navigate('SubscriptionScreen') },
+          ],
+          { cancelable: true }
+        );
+        return;
+      }
+    }
+
+    // Save message in Supabase
+    const { data, error } = await supabase
+      .from("message_and_subscription")
+      .insert([{ user_id: user.id, message: textToSend }])
+      .select();
+
+    setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
+    setIsAISpeaking(true);
+    console.log("insert result:", data, error);
+
+    await sendMessageToDb(
+      user.id,
+      characterIdNum,
+      textToSend,
+      'user',
+      mediaToSend?.uri,
+      mediaToSend?.type
+    );
+  }
 
 
       // Prepare context for AI
@@ -1566,58 +1644,63 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       // Call AI model
       const modelToUse = character.model || AI_MODELS.default;
       console.log(`Calling AI model: ${modelToUse} with ${apiMessages.length} messages.`);
+      if(messagesCount>=3 && userSubscribed == false){
 
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: modelToUse,
-          messages: apiMessages,
-        })
-      });
+      }else{
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`AI API Error: ${response.status} ${response.statusText} - ${errorBody}`);
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: modelToUse,
+            messages: apiMessages,
+          })
+        });
+        if (!response.ok) {
+          const errorBody = await response.text();
+          throw new Error(`AI API Error: ${response.status} ${response.statusText} - ${errorBody}`);
+        }
+        const data = await response.json();
+        const aiText = data.choices[0]?.message?.content?.trim() || "Sorry, I couldn't process that.";
+        const aiMessage: UIMessage = {
+          id: data.id || Crypto.randomUUID(),
+          text: aiText,
+          sender: 'ai',
+          timestamp: Date.now(),
+          type: 'message',
+        };
+  
+        if (isMounted.current) {
+          setMessages(prevMessages => addMessageWithSeparator(prevMessages, aiMessage));
+          scrollToBottom();
+        }
+  
+        // Save AI message to DB (if logged in)
+        if (!isGuest && user) {
+          await sendMessageToDb(user.id, characterIdNum, aiText, 'ai');
+        }
+  
+        // Update guest chat session summary AND save AI message for guests
+        if (isGuest) {
+          // *** Add logging here to check character object ***
+          console.log(`[ChatScreen - handleSend] Updating guest summary for ID ${characterIdNum}. Character object:`, character);
+          console.log(`[ChatScreen - handleSend] -> Passing category: ${character.category}`);
+          await updateGuestChatSessionSummary( // <-- Use the correct function name for summary
+            characterIdNum,
+            character.name,
+            aiText,
+            character.category // <-- Pass category
+          );
+          await saveGuestMessage(characterIdNum, aiMessage); // <-- Save AI message for guest
+        }
       }
 
-      const data = await response.json();
-      const aiText = data.choices[0]?.message?.content?.trim() || "Sorry, I couldn't process that.";
 
-      const aiMessage: UIMessage = {
-        id: data.id || Crypto.randomUUID(),
-        text: aiText,
-        sender: 'ai',
-        timestamp: Date.now(),
-        type: 'message',
-      };
 
-      if (isMounted.current) {
-        setMessages(prevMessages => addMessageWithSeparator(prevMessages, aiMessage));
-        scrollToBottom();
-      }
 
-      // Save AI message to DB (if logged in)
-      if (!isGuest && user) {
-        await sendMessageToDb(user.id, characterIdNum, aiText, 'ai');
-      }
-
-      // Update guest chat session summary AND save AI message for guests
-      if (isGuest) {
-        // *** Add logging here to check character object ***
-        console.log(`[ChatScreen - handleSend] Updating guest summary for ID ${characterIdNum}. Character object:`, character);
-        console.log(`[ChatScreen - handleSend] -> Passing category: ${character.category}`);
-        await updateGuestChatSessionSummary( // <-- Use the correct function name for summary
-          characterIdNum,
-          character.name,
-          aiText,
-          character.category // <-- Pass category
-        );
-        await saveGuestMessage(characterIdNum, aiMessage); // <-- Save AI message for guest
-      }
 
     } catch (err) {
       console.error("Error during AI interaction or DB/Storage save:", err);
@@ -1657,7 +1740,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       await newSound.playAsync();
 
       // Use the directly imported AVPlaybackStatus type
-      newSound.setOnPlayba;
+      newSound.setOnPlayba
+;
       ckStatusUpdate(async (status: AVPlaybackStatus) => {
         if (!isMounted.current) return; // Check mount status in callback
         if (status.isLoaded) {
