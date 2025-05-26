@@ -68,6 +68,7 @@ export default function SubscribeScreen() {
         onPurchaseCompleted={() => {
           handleUpdateSubscriptionStatus();
           setShowPaywall(false);
+            navigation.navigate('ThankYouScreen'); // Navigate to Thank You screen
           console.log('Paywall dismissed');
         }}
       />

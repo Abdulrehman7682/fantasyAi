@@ -42,6 +42,7 @@ import ChatListScreen from './components/ChatListScreen';
 import TermsAndConditionsScreen from './components/TermsAndConditionsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import { LoginProvider, navigationRef } from 'contexts/LoginContext';
+import ThankYouScreen from './components/ThankYouScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,6 +67,7 @@ type RootStackParamList = {
   DiscountOfferScreen: { fromCharacter?: boolean };
   TermsAndConditions: undefined;
   PrivacyPolicy: undefined;
+    ThankYouScreen: undefined; // 👈 Add this line
 };
 
 type MainTabsParamList = {
@@ -232,6 +234,7 @@ const Navigation = () => {
             <Stack.Screen name="DiscountOfferScreen" component={DiscountOfferScreen} />
             <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
             <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+            <Stack.Screen name="ThankYouScreen" component={ThankYouScreen} />
           </>
         )}
       </Stack.Navigator>
@@ -329,6 +332,7 @@ function AppContent() {
             <Stack.Screen name="DiscountOfferScreen" component={DiscountOfferScreen} />
             <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
             <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+            <Stack.Screen name="ThankYouScreen" component={ThankYouScreen} />
           </>
         )}
       </Stack.Navigator>
