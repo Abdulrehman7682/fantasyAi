@@ -1391,7 +1391,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           .select('message, user_id')
           .eq('user_id', user!.id)
         console.log("data of user messages and subscription status:", data);
-        console.error("error of user messages and subscription status:", error);
+        // console.error("error of user messages and subscription status:", error);
 
         setMessagesCount(data?.length || 0); // Get the number of messages
         

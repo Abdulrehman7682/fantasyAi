@@ -12,6 +12,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
 import RevenueCatUI from 'react-native-purchases-ui';
 import Purchases from 'react-native-purchases';
+import { supabase } from '../utils/supabase';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Define Category type (make sure it includes all used fields)
 export interface Category {
@@ -56,6 +58,7 @@ const HomeScreen = () => {
   const displayName = user?.email?.split('@')[0] || 'Alex';
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isLoading, setIsLoading] = useState(false);
+  const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
 
   //Add M
   // const [freeCharactersUsed, setFreeCharactersUsed] = useState(0);
@@ -80,22 +83,39 @@ const HomeScreen = () => {
     console.log('RevenueCat Initialized successfully');
   }, []);
 
+  const fetchUserSubscriptionStatus = async () => {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('is_subscribed, user_id')
+      .eq('user_id', user!.id)
+    console.log("data of subscription status:", data);
+    if (data) {
+      setUserSubscribed(data[0]?.is_subscribed);
+    } else {
+      setUserSubscribed(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserSubscriptionStatus();
+  }, [user, userSubscribed]);
+
   const handleSubscribe = async () => {
     // navigation.navigate('SubscriptionScreen');
     console.log('[HomeScreen] Subscribe button pressed');
-// Your existing handleSubscribe function with proper typing
-// const handleSubscribe: SubscribeHandler = async () => {
-//     try {
-//       console.log("try")
-//       await <RevenueCatUI.Paywall
-//         onDismiss={() => {
-//           // Dismiss the paywall, i.e. remove the view, navigate to another screen, etc.
-//           // Will be called when the close button is pressed (if enabled) or when a purchase succeeds.
-//         }}
-//       />
-//     } catch (error) {
-//       console.log(error)
-//     }
+    // Your existing handleSubscribe function with proper typing
+    // const handleSubscribe: SubscribeHandler = async () => {
+    //     try {
+    //       console.log("try")
+    //       await <RevenueCatUI.Paywall
+    //         onDismiss={() => {
+    //           // Dismiss the paywall, i.e. remove the view, navigate to another screen, etc.
+    //           // Will be called when the close button is pressed (if enabled) or when a purchase succeeds.
+    //         }}
+    //       />
+    //     } catch (error) {
+    //       console.log(error)
+    //     }
   };
 
   const getWelcomeMessage = () => {
@@ -304,6 +324,40 @@ const HomeScreen = () => {
       alignItems: 'center',
       zIndex: 1000,
     },
+    premiumBannerGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 16,
+      borderRadius: 16,
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 6,
+    },
+
+    premiumBannerText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: '600',
+      flex: 1,
+    },
+
+    premiumBannerButton: {
+      backgroundColor: 'white',
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 10,
+      marginLeft: 12,
+    },
+
+    premiumBannerButtonText: {
+      color: '#ff2e63',
+      fontSize: 14,
+      fontWeight: 'bold',
+    },
+
   }), [colors]);
 
   const renderCategoryTile = (category: Category) => {
@@ -357,7 +411,31 @@ const HomeScreen = () => {
         </View>
       )}
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingTop: !userSubscribed ? 40 : 0 }}
+        >
+          {!userSubscribed && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('SubscriptionScreen')}
+              activeOpacity={0.9}
+              style={{ borderRadius: 16, marginBottom: 20 }}
+            >
+              <LinearGradient
+                colors={['#ff8c00', '#ff2e63']} // adjust for branding
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.premiumBannerGradient}
+              >
+                <Text style={styles.premiumBannerText}>
+                  Get premium features and unlock up to 50 daily messages
+                </Text>
+                <View style={styles.premiumBannerButton}>
+                  <Text style={styles.premiumBannerButtonText}>Upgrade</Text>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.header}>
             <Text style={styles.greeting}>
               {getWelcomeMessage()}
