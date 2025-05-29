@@ -1023,7 +1023,8 @@ const ChatHeader = React.memo(({ character, handleBack }: ChatHeaderProps) => {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 10,
+      paddingTop: 30,
+      paddingBottom: 10,
       paddingHorizontal: 10,
       backgroundColor: colors.card,
       borderBottomWidth: 1,
@@ -1393,7 +1394,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         console.log("data of user messages and subscription status:", data);
         // console.error("error of user messages and subscription status:", error);
 
-        setMessagesCount(data?.length || 0); // Get the number of messages
+        setMessagesCount(data?.length || 0); // Get the number of messages:
         
 
 

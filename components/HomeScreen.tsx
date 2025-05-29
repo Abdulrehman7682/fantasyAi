@@ -264,16 +264,17 @@ const HomeScreen = () => {
       marginBottom: 28,
     },
     greeting: {
-      fontSize: 28, // Further reduced font size
+      fontSize: 28,
+      marginTop: 20,// Further reduced font size
       fontWeight: '700',
       color: colors.text,
-      marginBottom: 6, // Slightly reduced margin
+      marginBottom: 4, // Slightly reduced margin
     },
     subheading: {
       fontSize: 18,
       color: colors.secondaryText,
       fontWeight: '400',
-      marginBottom: 8,
+      marginBottom: 4,
     },
     creditsCounter: {
       fontSize: 16,
@@ -427,7 +428,7 @@ const HomeScreen = () => {
                 style={styles.premiumBannerGradient}
               >
                 <Text style={styles.premiumBannerText}>
-                  Get premium features and unlock up to 50 daily messages
+                  Upgrade to Premium for unlimited access
                 </Text>
                 <View style={styles.premiumBannerButton}>
                   <Text style={styles.premiumBannerButtonText}>Upgrade</Text>

@@ -52,6 +52,8 @@ export default function SubscribeScreen() {
   .eq('user_id', user!.id)
   .select()
   console.log("data from new" , data)
+     const customerInfo = await Purchases.getCustomerInfo();
+     console.log("customerInfoUser", customerInfo);
   }
 
   const handleGoBack = () => {
