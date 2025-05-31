@@ -190,6 +190,7 @@ function EmailSignInComponent({ navigation, route }: EmailSignInProps) {
             "Your account has been created successfully. Please check your email for confirmation.",
             [{ text: "OK", onPress: () => setMode('signin') }]
           );
+          // navigation.navigate(''); // Navigate to SignIn screen
         }
       }
 

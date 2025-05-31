@@ -119,7 +119,7 @@ const HomeScreen = () => {
   };
 
   const getWelcomeMessage = () => {
-    return "Welcome back";
+    return "Welcome Back";
   };
 
   // Load previously used characters on component mount
@@ -260,12 +260,16 @@ const HomeScreen = () => {
       paddingHorizontal: 16,
     },
     header: {
-      marginTop: 20,
+      marginTop: 0,
+      marginBottom: 28,
+    },
+     header2: {
+      marginTop: 30,
       marginBottom: 28,
     },
     greeting: {
       fontSize: 28,
-      marginTop: 20,// Further reduced font size
+      marginTop: 5,// Further reduced font size
       fontWeight: '700',
       color: colors.text,
       marginBottom: 4, // Slightly reduced margin
@@ -336,6 +340,8 @@ const HomeScreen = () => {
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.2,
       shadowRadius: 6,
+      marginTop : 16,
+      marginBottom : 0,
     },
 
     premiumBannerText: {
@@ -437,7 +443,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           )}
 
-          <View style={styles.header}>
+          <View style={!userSubscribed ? styles.header : styles.header2}>
             <Text style={styles.greeting}>
               {getWelcomeMessage()}
             </Text>

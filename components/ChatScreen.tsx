@@ -1539,7 +1539,9 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         .gte("created_at", startOfToday().toISOString());
 
       const todayMessageCount = data?.length || 0;
+      // setMessages(data? data : "New")
       console.log("Today's message count:", todayMessageCount);
+      console.log("data of user messages to real and subscription status:", data);
 
       if (todayMessageCount >= 50) {
         setIsAISpeaking(false);
@@ -1576,7 +1578,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     // Save message in Supabase
     const { data, error } = await supabase
       .from("message_and_subscription")
-      .insert([{ user_id: user.id, message: textToSend }])
+      .insert([{ user_id: user.id, message: textToSend , character_id : characterIdNum }])
       .select();
 
     setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));

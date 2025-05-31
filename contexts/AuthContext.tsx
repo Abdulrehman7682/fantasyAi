@@ -5,8 +5,10 @@ import { Session, User, Provider } from '@supabase/supabase-js';
 import * as WebBrowser from 'expo-web-browser';
 // Removed unused Platform import
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 // Removed loggingService import as it's not confirmed to exist/be exported
+// import { useNavigation } from '@react-navigation/native';
 
 // Constants for guest message tracking
 const GUEST_MESSAGE_COUNT_KEY = 'guest_message_count';
@@ -53,6 +55,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [offerShown, setOfferShown] = useState(false);
   const [credits, setCredits] = useState<number | null>(null); // Added credits state
   const [isLoginGoogle, setIsLoginGoogle] = useState(false);
+  // const navigation = useNavigation(); // Assuming you're using React Navigation
   // Removed unused lastDiscountOfferDate state
    useEffect(() => {
     const getUserFromStorage = async () => {
@@ -209,6 +212,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   //     subscription.unsubscribe();
   //   };
   // }, []); // Empty dependency array ensures this runs only once on mount
+  
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
@@ -216,9 +220,19 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         console.warn('Sign in failed:', { email, error: error.message });
+        Alert.alert('Sign In Error', error.message);
         return { success: false, error: error.message };
       }
       // Auth listener will handle setting user/session and isGuest=false
+         await AsyncStorage.setItem(
+  'user',
+  JSON.stringify({
+    email,
+    password,
+  })
+);
+signInFromStorage()
+      console.log('Sign in successful, user state updated');
       return { success: true };
     } catch (error: any) {
       console.error('Unexpected sign in error:', { email, error });
@@ -228,21 +242,45 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
+  const createSubscriptionUser = async(userId: string) => {
+      const { data, error } = await supabase
+    .from('subscriptions')
+    .insert([
+      { user_id: userId, is_subscribed: false },
+    ])
+    .select('user_id, is_subscribed');
+    console.log("createSubscriptionUser data", data)
+    }
+
   const signUp = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
       // Note: Supabase signUp sends a confirmation email by default.
       // The user state might not immediately reflect a logged-in user until confirmation.
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data , error } = await supabase.auth.signUp({ email, password });
       if (error) {
         console.warn('Sign up failed:', { email, error: error.message });
         return { success: false, error: error.message };
+        
       }
       // Auth listener might set user/session briefly, or wait for confirmation depending on Supabase settings.
       // Explicitly setting isGuest to false might be premature if email confirmation is needed.
       // However, aligning with original logic for now.
       setIsGuest(false);
+      await AsyncStorage.setItem(
+  'user',
+  JSON.stringify({
+    email,
+    password,
+    id : data.user?.id, // Ensure user ID is stored
+  })
+);
+console.log("data sss" , data.user?.id)
+createSubscriptionUser(data?.user?.id!);
+ signInFromStorage()
+      console.log('Sign up successful, user state updated');
       return { success: true }; // Indicates sign up request initiated
+ // Navigate to login screen after sign up
     } catch (error: any) {
       console.error('Unexpected sign up error:', { email, error });
       return { success: false, error: error.message || 'An unexpected error occurred during sign up' };
