@@ -1,6 +1,6 @@
 // API Keys and Configuration
 // export const OPENROUTER_API_KEY = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY || '';
-export const OPENROUTER_API_KEY = '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';
+// export const OPENROUTER_API_KEY = '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';
 
 // OpenRouter Model Configuration
 export const AI_MODELS = {

@@ -1159,7 +1159,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const isMounted = useRef(true); // <-- Add isMounted ref
   const [messagesCount, setMessagesCount] = useState(0); // <-- Track total messages count
   const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
-  
+
   // let userSubscribed: boolean = false; 
   const flatListRef = useRef<FlatList>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -1394,23 +1394,23 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           .select('message, user_id , sender')
           .eq('user_id', user!.id)
           .eq('character_id', characterIdNum)
-           .order('created_at', { ascending: true });
+          .order('created_at', { ascending: true });
 
         console.log("data of user messages and subscription status:", data);
-         // Supabase se aaye data ko format karo
-  const formattedMessages: UIMessage[] = data!.map((item, index) => ({
-    id: `${index}-${item.message}-${item.created_at}`,
-    text: item.message,
-    sender: item.sender, // ya 'ai' agar ai ka bhi message hai
-    timestamp: Date.now(),
-    type: 'message',
-  }));
-  console.log("formatted messages:", formattedMessages);
-    const messagesWithSeparators = addDateSeparators(formattedMessages);
+        // Supabase se aaye data ko format karo
+        const formattedMessages: UIMessage[] = data!.map((item, index) => ({
+          id: `${index}-${item.message}-${item.created_at}`,
+          text: item.message,
+          sender: item.sender, // ya 'ai' agar ai ka bhi message hai
+          timestamp: Date.now(),
+          type: 'message',
+        }));
+        console.log("formatted messages:", formattedMessages);
+        const messagesWithSeparators = addDateSeparators(formattedMessages);
         // console.error("error of user messages and subscription status:", error);
-         setMessages(messagesWithSeparators);
+        setMessages(messagesWithSeparators);
         setMessagesCount(data?.length || 0); // Get the number of messages:
-        
+
 
 
 
@@ -1425,18 +1425,33 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.log("data of subscription status:", data);
       if (data) {
         setUserSubscribed(data[0]?.is_subscribed);
-      }else{
-      setUserSubscribed(false);
+      } else {
+        setUserSubscribed(false);
       }
     }
     fetchMessages();
-    console.log( "messagesCount:", messagesCount, "userSubscribed:", userSubscribed);
+    console.log("messagesCount:", messagesCount, "userSubscribed:", userSubscribed);
     console.log("userid", user!.id)
 
 
-  },[messagesCount]);
+  }, [messagesCount]);
 
-// should work if user is not logged in 
+  const fetchApiKeyFromSupabase = async (keyName: string): Promise<string | null> => {
+    const { data, error } = await supabase
+      .from('ai_key')
+      .select('*')
+      .eq('key_name', keyName)
+      .single();
+
+    if (error) {
+      console.error("Error fetching API key:", error);
+      return null;
+    }
+
+    return data?.api_key || null;
+  };
+
+  // should work if user is not logged in 
   const handleSend = useCallback(async () => {
     if (!character) return;
 
@@ -1531,80 +1546,80 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
 
     try {
-  // setMessagesCount(prevCount => prevCount + 1); // Local state update
+      setMessagesCount(prevCount => prevCount + 1); // Local state update
 
-  // Send message to DB (if logged in)
-  if (!isGuest && user) {
-    // Check subscription status from RevenueCat
-    // const customerInfo = await Purchases.getCustomerInfo();
-    // const isSubscribed = customerInfo.entitlements.active["your_entitlement_id"] !== undefined;
+      // Send message to DB (if logged in)
+      if (!isGuest && user) {
+        // Check subscription status from RevenueCat
+        // const customerInfo = await Purchases.getCustomerInfo();
+        // const isSubscribed = customerInfo.entitlements.active["your_entitlement_id"] !== undefined;
 
-    // Get message count
-    if (userSubscribed) {
-      // Subscribed user: allow 50 messages per day
-      const { data, error } = await supabase
-        .from("message_and_subscription")
-        .select("message", { count: "exact" })
-        .eq("user_id", user.id)
-        .gte("created_at", startOfToday().toISOString());
+        // Get message count
+        if (userSubscribed) {
+          // Subscribed user: allow 50 messages per day
+          const { data, error } = await supabase
+            .from("message_and_subscription")
+            .select("message", { count: "exact" })
+            .eq("user_id", user.id)
+            .gte("created_at", startOfToday().toISOString());
 
-      const todayMessageCount = data?.length || 0;
-      // setMessages(data? data : "New")
-      console.log("Today's message count:", todayMessageCount);
-      console.log("data of user messages to real and subscription status:", data);
+          const todayMessageCount = data?.length || 0;
+          // setMessages(data? data : "New")
+          console.log("Today's message count:", todayMessageCount);
+          console.log("data of user messages to real and subscription status:", data);
 
-      if (todayMessageCount >= 50) {
-        setIsAISpeaking(false);
-        //  try {
-        //   const customerInfo = await Purchases.getCustomerInfo();
-        //   console.log("customerInfo:", customerInfo);
-        // } catch (error) {
-        //   console.log("Error fetching customer info:", error);
-        // }
-        Alert.alert(
-          "Daily Limit Reached",
-          "You have reached your 50-message limit for today. Please try again tomorrow."
+          if (todayMessageCount >= 50) {
+            setIsAISpeaking(false);
+            //  try {
+            //   const customerInfo = await Purchases.getCustomerInfo();
+            //   console.log("customerInfo:", customerInfo);
+            // } catch (error) {
+            //   console.log("Error fetching customer info:", error);
+            // }
+            Alert.alert(
+              "Daily Limit Reached",
+              "You have reached your 50-message limit for today. Please try again tomorrow."
+            );
+            return;
+          }
+
+        } else {
+          // Free user: allow only 3 lifetime messages
+          if (messagesCount >= 3) {
+            setIsAISpeaking(false);
+            Alert.alert(
+              "Subscription Required",
+              "You need to subscribe to send more messages.",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "Subscribe", onPress: () => navigation.navigate('SubscriptionScreen') },
+              ],
+              { cancelable: true }
+            );
+            return;
+          }
+        }
+
+        // Save message in Supabase
+        const { data, error } = await supabase
+          .from("message_and_subscription")
+          .insert([{ user_id: user.id, message: textToSend, character_id: characterIdNum, sender: 'user' }])
+          .select();
+
+        // setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
+        setIsAISpeaking(true);
+        console.log("insert result:", data, error);
+        setMessagesCount(prevCount => prevCount + 1); // Increment messages count
+
+        await sendMessageToDb(
+          user.id,
+          characterIdNum,
+          textToSend,
+          'user',
+          mediaToSend?.uri,
+          mediaToSend?.type
         );
-        return;
       }
-
-    } else {
-      // Free user: allow only 3 lifetime messages
-      if (messagesCount >= 3) {
-        setIsAISpeaking(false);
-        Alert.alert(
-          "Subscription Required",
-          "You need to subscribe to send more messages.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Subscribe", onPress: () => navigation.navigate('SubscriptionScreen') },
-          ],
-          { cancelable: true }
-        );
-        return;
-      }
-    }
-
-    // Save message in Supabase
-    const { data, error } = await supabase
-      .from("message_and_subscription")
-      .insert([{ user_id: user.id, message: textToSend , character_id : characterIdNum , sender: 'user' }])
-      .select();
-
-    // setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
-    setIsAISpeaking(true);
-    console.log("insert result:", data, error);
-    setMessagesCount(prevCount => prevCount + 1); // Increment messages count
-
-    await sendMessageToDb(
-      user.id,
-      characterIdNum,
-      textToSend,
-      'user',
-      mediaToSend?.uri,
-      mediaToSend?.type
-    );
-  }
 
 
       // Prepare context for AI
@@ -1658,14 +1673,20 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       // Call AI model
       const modelToUse = character.model || AI_MODELS.default;
       console.log(`Calling AI model: ${modelToUse} with ${apiMessages.length} messages.`);
-      if(messagesCount>=3 && userSubscribed == false){
+      if (messagesCount >= 3 && userSubscribed == false) {
 
-      }else{
+      } else {
+        const openrouterKey = await fetchApiKeyFromSupabase('openrouter');
+
+        if (!openrouterKey) {
+          console.error("OpenRouter API key not found.");
+          return;
+        }
 
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "Authorization": `Bearer ${openrouterKey}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
@@ -1680,31 +1701,31 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         const data = await response.json();
 
         ////////Mani Mani Mani
-       const aiText = data.choices[0]?.message?.content?.trim() || "Sorry, I couldn't process that.";
+        const aiText = data.choices[0]?.message?.content?.trim() || "Sorry, I couldn't process that.";
 
-const aiMessage: UIMessage = {
-  id: data.id || Crypto.randomUUID(),
-  text: aiText,
-  sender: 'ai',
-  timestamp: Date.now(),
-  type: 'message',
-};
-  // ✅ Show AI message on screen
-if (isMounted.current) {
-  setMessages(prevMessages => addMessageWithSeparator(prevMessages, aiMessage));
-  scrollToBottom();
-}
-  
-       // ✅ Save AI message to Supabase
-if (!isGuest && user) {
-  await supabase.from("message_and_subscription").insert([{
-    user_id: user.id,
-    message: aiText,
-    character_id: characterIdNum,
-    sender: 'ai' // <-- ✅ Add this field in your Supabase table
-  }]);
-}
-  
+        const aiMessage: UIMessage = {
+          id: data.id || Crypto.randomUUID(),
+          text: aiText,
+          sender: 'ai',
+          timestamp: Date.now(),
+          type: 'message',
+        };
+        // ✅ Show AI message on screen
+        if (isMounted.current) {
+          setMessages(prevMessages => addMessageWithSeparator(prevMessages, aiMessage));
+          scrollToBottom();
+        }
+
+        // ✅ Save AI message to Supabase
+        if (!isGuest && user) {
+          await supabase.from("message_and_subscription").insert([{
+            user_id: user.id,
+            message: aiText,
+            character_id: characterIdNum,
+            sender: 'ai' // <-- ✅ Add this field in your Supabase table
+          }]);
+        }
+
         // Update guest chat session summary AND save AI message for guests
         if (isGuest) {
           // *** Add logging here to check character object ***
@@ -1725,31 +1746,31 @@ if (!isGuest && user) {
 
 
     } catch (err) {
-  console.error("Error during AI interaction or DB/Storage save:", err);
+      console.error("Error during AI interaction or DB/Storage save:", err);
 
-  const errorMessageText = "Error: need to fix it";
-  const errorMessage: UIMessage = {
-    id: Crypto.randomUUID(),
-    text: errorMessageText,
-    sender: 'ai',
-    timestamp: Date.now(),
-    type: 'message',
-  };
+      const errorMessageText = "Error: need to fix it";
+      const errorMessage: UIMessage = {
+        id: Crypto.randomUUID(),
+        text: errorMessageText,
+        sender: 'ai',
+        timestamp: Date.now(),
+        type: 'message',
+      };
 
-  if (isMounted.current) {
-    setMessages(prevMessages => addMessageWithSeparator(prevMessages, errorMessage));
-    scrollToBottom();
-  }
+      if (isMounted.current) {
+        setMessages(prevMessages => addMessageWithSeparator(prevMessages, errorMessage));
+        scrollToBottom();
+      }
 
-  // ✅ Store error as AI message in Supabase
-  if (!isGuest && user) {
-    await supabase.from("message_and_subscription").insert([{
-      user_id: user.id,
-      message: errorMessageText,
-      character_id: characterIdNum,
-      sender: 'ai'
-    }]);
-  }
+      // ✅ Store error as AI message in Supabase
+      if (!isGuest && user) {
+        await supabase.from("message_and_subscription").insert([{
+          user_id: user.id,
+          message: errorMessageText,
+          character_id: characterIdNum,
+          sender: 'ai'
+        }]);
+      }
     } finally {
       if (isMounted.current) {
         setIsAISpeaking(false);
@@ -1776,7 +1797,7 @@ if (!isGuest && user) {
 
       // Use the directly imported AVPlaybackStatus type
       newSound.setOnPlayba
-;
+        ;
       ckStatusUpdate(async (status: AVPlaybackStatus) => {
         if (!isMounted.current) return; // Check mount status in callback
         if (status.isLoaded) {
