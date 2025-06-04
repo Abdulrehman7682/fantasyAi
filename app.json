@@ -16,6 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "usesAppleSignIn": true,
       "bundleIdentifier": "com.fantasyai.app",
       "config": {
         "usesNonExemptEncryption": false
@@ -48,6 +49,7 @@
       "expo-build-properties",
       "@react-native-google-signin/google-signin",
       "@react-native-purchases/expo-plugin",
+      "expo-apple-authentication",
       [
         "@stripe/stripe-react-native",
         {

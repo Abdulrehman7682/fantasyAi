@@ -3,6 +3,9 @@
 enabled = true
 [auth.external.google]
 _id = 503603363717-14ccolrlec61qlame0ltoffuvdbhoa7k.apps.googleusercontent.com
+[auth.external.apple]
+enabled = true
+client_id = "Replace your Apple Client Id"
 verify_jwt = true
 import_map = "./functions/openrouter-proxy/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.

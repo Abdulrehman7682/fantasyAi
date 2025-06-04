@@ -13,6 +13,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
+import * as AppleAuthentication from 'expo-apple-authentication'
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useOnboarding } from '../contexts/OnboardingContext'; // Add this import
@@ -65,18 +66,18 @@ const colors = {
 // }
 
 export default function LoginScreen({ navigation }: { navigation: LoginScreenNavigationProp }) { // Add type annotation
-  const { signInWithApple,  skipAuth } = useAuth();
+  const { signInWithApple, skipAuth } = useAuth();
   const { isDarkMode } = useContext(ThemeContext);
   const { resetOnboarding } = useOnboarding(); // Add this line to get resetOnboarding function
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null)
-  
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-   const { signInFromStorage } = useAuth();
-   
-  
+  const { signInFromStorage } = useAuth();
+
+
   useEffect(() => {
     // Run entrance animations
     Animated.parallel([
@@ -107,22 +108,22 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
       offlineAccess: true,
       forceCodeForRefreshToken: true,
 
-    })  
+    })
     console.log("GoogleSignin configured")
   }, [])
 
-  const createSubscriptionUser = async(userId: string) => {
+  const createSubscriptionUser = async (userId: string) => {
     const { data, error } = await supabase
-  .from('subscriptions')
-  .insert([
-    { user_id: userId, is_subscribed: false },
-  ])
-  .select('user_id, is_subscribed');
-  console.log("createSubscriptionUser data", data)
+      .from('subscriptions')
+      .insert([
+        { user_id: userId, is_subscribed: false },
+      ])
+      .select('user_id, is_subscribed');
+    console.log("createSubscriptionUser data", data)
   }
 
 
-  const signInWithGoogle = async () => { 
+  const signInWithGoogle = async () => {
     console.log("signInWithGoogle")
     try {
       console.log("try to sign in with google")
@@ -139,12 +140,12 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
 
         console.log("data", data.session?.user.id)
         console.log("error", error)
-            if (data?.user) {
-        // ✅ Save user data to AsyncStorage
-        await AsyncStorage.setItem('user', JSON.stringify(data.user))
-        await signInFromStorage(); // ✅ Call the function on mount
-        console.log("User saved to AsyncStorage")
-      }
+        if (data?.user) {
+          // ✅ Save user data to AsyncStorage
+          await AsyncStorage.setItem('user', JSON.stringify(data.user))
+          await signInFromStorage(); // ✅ Call the function on mount
+          console.log("User saved to AsyncStorage")
+        }
       } else {
         throw new Error('no ID token present!')
       }
@@ -162,28 +163,49 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
   }
 
   const handleAppleSignIn = async () => {
-    try {
-      setLoading('apple');
-      setError(null);
-      await signInWithApple();
-    } catch (err) {
-      handleAuthError(err, 'Apple');
-    } finally {
-      setLoading(null);
-    }
-  };
+  // Just Uncommit this code to use Apple Sign-In
 
-  // const handleGoogleSignIn = async () => {
-  //   try {
-  //     setLoading('google');
-  //     setError(null);
-  //     await signInWithGoogle();
-  //   } catch (err) {
-  //     handleAuthError(err, 'Google');
-  //   } finally {
-  //     setLoading(null);
-  //   }
-  // };
+  //  if (Platform.OS === 'ios') {
+     // try {
+    //   const credential = await AppleAuthentication.signInAsync({
+    //     requestedScopes: [
+    //       AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+    //       AppleAuthentication.AppleAuthenticationScope.EMAIL,
+    //     ],
+    //   })
+    //   // Sign in via Supabase Auth.
+    //   if (credential.identityToken) {
+    //     const {
+    //       error,
+    //       data: { user },
+    //     } = await supabase.auth.signInWithIdToken({
+    //       provider: 'apple',
+    //       token: credential.identityToken,
+    //     })
+    //     console.log(JSON.stringify({ error, user }, null, 2))
+    //     if (!error) {
+    //       // User is signed in.
+    //       Alert.alert("User signed in successfully");
+    //       await AsyncStorage.setItem('user', JSON.stringify(user))
+    //       await signInFromStorage(); // ✅ Call the function on mount
+    //       console.log("User saved to AsyncStorage")
+
+    //     }
+    //   } else {
+    //     throw new Error('No identityToken.')
+    //   }
+    // } catch (error) {
+    //   if (error) {
+    //     // handle that the user canceled the sign-in flow
+    //     Alert.alert("Apple sign-in canceled or failed");
+    //   } else {
+    //     // handle other errors
+    //   }
+    // }
+  //  }else{
+  // Alert.alert("Apple sign-in is only available on iOS devices.");
+// }
+  };
 
   const handleEmailSignIn = () => {
     navigation.navigate('EmailSignIn', { isSignUp: false });
@@ -199,7 +221,7 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
 
   const handleAuthError = (err: any, provider: string) => {
     console.error(`${provider} sign-in error:`, err);
-    
+
     if (err.message?.includes('canceled')) {
       setError(`${provider} sign-in was canceled.`);
     } else if (err.message?.includes('network')) {
@@ -207,7 +229,7 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
     } else {
       setError(`Unable to sign in with ${provider}. Please try again.`);
     }
-    
+
     // Clear error after 5 seconds
     setTimeout(() => setError(null), 5000);
   };
@@ -309,7 +331,7 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
                 <ActivityIndicator color={colors.buttonTextPrimary} size="small" />
               ) : (
                 <>
-                 {/* Using Ionicons, replace with actual Apple logo image if needed */}
+                  {/* Using Ionicons, replace with actual Apple logo image if needed */}
                   <Ionicons name="logo-apple" size={24} color={colors.iconApple} style={styles.socialIcon} />
                   <Text style={styles.socialButtonText}>Continue with Apple</Text>
                 </>
@@ -321,7 +343,7 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
               onPress={handleEmailSignIn}
               disabled={loading !== null}
             >
-               {/* Using Ionicons for email */}
+              {/* Using Ionicons for email */}
               <Ionicons name="mail-outline" size={22} color={colors.iconEmail} style={styles.socialIcon} />
               <Text style={styles.socialButtonText}>Continue with Email</Text>
             </TouchableOpacity>
@@ -352,9 +374,9 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
                 <Text style={styles.linkText}>Forgot password?</Text>
               </TouchableOpacity>
             </View>
-            
+
             {/* Developer option to reset onboarding */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.devOptionButton}
               onPress={handleResetOnboarding}
             >

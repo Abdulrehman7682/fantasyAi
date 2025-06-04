@@ -1380,20 +1380,35 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     pickImage();
   }, [pickImage]); // <-- Added dependency
 
+  const characterIdNum = Number(character!.id);
   /**
    * Handle sending a message
    * 
    */
+  const uniqueId = Crypto.randomUUID();
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const { data, error } = await supabase
           .from('message_and_subscription')
-          .select('message, user_id')
+          .select('message, user_id , sender')
           .eq('user_id', user!.id)
-        console.log("data of user messages and subscription status:", data);
-        // console.error("error of user messages and subscription status:", error);
+          .eq('character_id', characterIdNum)
+           .order('created_at', { ascending: true });
 
+        console.log("data of user messages and subscription status:", data);
+         // Supabase se aaye data ko format karo
+  const formattedMessages: UIMessage[] = data!.map((item, index) => ({
+    id: `${index}-${item.message}-${item.created_at}`,
+    text: item.message,
+    sender: item.sender, // ya 'ai' agar ai ka bhi message hai
+    timestamp: Date.now(),
+    type: 'message',
+  }));
+  console.log("formatted messages:", formattedMessages);
+    const messagesWithSeparators = addDateSeparators(formattedMessages);
+        // console.error("error of user messages and subscription status:", error);
+         setMessages(messagesWithSeparators);
         setMessagesCount(data?.length || 0); // Get the number of messages:
         
 
@@ -1421,7 +1436,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
   },[messagesCount]);
 
-
+// should work if user is not logged in 
   const handleSend = useCallback(async () => {
     if (!character) return;
 
@@ -1474,11 +1489,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     // getting user messages and subscription status before sending messages
 
 
-
-
-
-
-
     // try {
     //   setMessagesCount(prevCount => prevCount + 1); // Increment messages count
     //   // Send message to DB (if logged in)
@@ -1521,7 +1531,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
 
     try {
-  setMessagesCount(prevCount => prevCount + 1); // Local state update
+  // setMessagesCount(prevCount => prevCount + 1); // Local state update
 
   // Send message to DB (if logged in)
   if (!isGuest && user) {
@@ -1578,12 +1588,13 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     // Save message in Supabase
     const { data, error } = await supabase
       .from("message_and_subscription")
-      .insert([{ user_id: user.id, message: textToSend , character_id : characterIdNum }])
+      .insert([{ user_id: user.id, message: textToSend , character_id : characterIdNum , sender: 'user' }])
       .select();
 
-    setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
+    // setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
     setIsAISpeaking(true);
     console.log("insert result:", data, error);
+    setMessagesCount(prevCount => prevCount + 1); // Increment messages count
 
     await sendMessageToDb(
       user.id,
@@ -1667,24 +1678,32 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           throw new Error(`AI API Error: ${response.status} ${response.statusText} - ${errorBody}`);
         }
         const data = await response.json();
-        const aiText = data.choices[0]?.message?.content?.trim() || "Sorry, I couldn't process that.";
-        const aiMessage: UIMessage = {
-          id: data.id || Crypto.randomUUID(),
-          text: aiText,
-          sender: 'ai',
-          timestamp: Date.now(),
-          type: 'message',
-        };
+
+        ////////Mani Mani Mani
+       const aiText = data.choices[0]?.message?.content?.trim() || "Sorry, I couldn't process that.";
+
+const aiMessage: UIMessage = {
+  id: data.id || Crypto.randomUUID(),
+  text: aiText,
+  sender: 'ai',
+  timestamp: Date.now(),
+  type: 'message',
+};
+  // ✅ Show AI message on screen
+if (isMounted.current) {
+  setMessages(prevMessages => addMessageWithSeparator(prevMessages, aiMessage));
+  scrollToBottom();
+}
   
-        if (isMounted.current) {
-          setMessages(prevMessages => addMessageWithSeparator(prevMessages, aiMessage));
-          scrollToBottom();
-        }
-  
-        // Save AI message to DB (if logged in)
-        if (!isGuest && user) {
-          await sendMessageToDb(user.id, characterIdNum, aiText, 'ai');
-        }
+       // ✅ Save AI message to Supabase
+if (!isGuest && user) {
+  await supabase.from("message_and_subscription").insert([{
+    user_id: user.id,
+    message: aiText,
+    character_id: characterIdNum,
+    sender: 'ai' // <-- ✅ Add this field in your Supabase table
+  }]);
+}
   
         // Update guest chat session summary AND save AI message for guests
         if (isGuest) {
@@ -1706,18 +1725,31 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
 
     } catch (err) {
-      console.error("Error during AI interaction or DB/Storage save:", err);
-      const errorMessage: UIMessage = {
-        id: Crypto.randomUUID(),
-        text: `Sorry, an error occurred. ${err instanceof Error ? err.message : 'Please try again.'} `,
-        sender: 'ai',
-        timestamp: Date.now(),
-        type: 'message',
-      };
-      if (isMounted.current) {
-        setMessages(prevMessages => addMessageWithSeparator(prevMessages, errorMessage));
-        scrollToBottom();
-      }
+  console.error("Error during AI interaction or DB/Storage save:", err);
+
+  const errorMessageText = "Error: need to fix it";
+  const errorMessage: UIMessage = {
+    id: Crypto.randomUUID(),
+    text: errorMessageText,
+    sender: 'ai',
+    timestamp: Date.now(),
+    type: 'message',
+  };
+
+  if (isMounted.current) {
+    setMessages(prevMessages => addMessageWithSeparator(prevMessages, errorMessage));
+    scrollToBottom();
+  }
+
+  // ✅ Store error as AI message in Supabase
+  if (!isGuest && user) {
+    await supabase.from("message_and_subscription").insert([{
+      user_id: user.id,
+      message: errorMessageText,
+      character_id: characterIdNum,
+      sender: 'ai'
+    }]);
+  }
     } finally {
       if (isMounted.current) {
         setIsAISpeaking(false);
