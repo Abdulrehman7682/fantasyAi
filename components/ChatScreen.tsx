@@ -1190,8 +1190,10 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       const charId = Number(character.id);
       if (!isNaN(charId)) {
         const countStr = await AsyncStorage.getItem(`guestMessageCount_${charId}`);
+        const countStr2 = await AsyncStorage.getItem("totalGuestMessageCount");
+        const totalCount = countStr2 ? parseInt(countStr2, 10) : 0;
         if (isMounted.current) {
-          setGuestMessageCount(countStr ? parseInt(countStr, 10) : 0);
+          setGuestMessageCount(totalCount);
         }
       } else {
         console.warn("Cannot load guest message count due to invalid character ID:", character.id);
@@ -1507,6 +1509,9 @@ export default function ChatScreen({ route }: ChatScreenProps) {
        const newCount = guestMessageCount + 1;
        if (isMounted.current) setGuestMessageCount(newCount);
       await AsyncStorage.setItem(`guestMessageCount_${characterIdNum}`, newCount.toString());
+      await AsyncStorage.setItem("totalGuestMessageCount", newCount.toString());
+       await loadGuestHistory(characterIdNum); // <-- Load guest history
+      setMessages(prev => [...prev, userMessage]);
       await saveGuestMessage(characterIdNum, userMessage); // <-- Save user message for guest
       console.log("Guest message saved:", userMessage);
     }
@@ -1975,6 +1980,11 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     );
   }, [character?.avatar, characterIconName]); // Add characterIconName here
 
+
+  const guestLogin = async() =>{
+    setGuest()
+  }
+
   // --- Main Return ---
 
   // Define subTasks based on character or default to empty array
@@ -2129,9 +2139,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
                   pressed && { opacity: 0.8 }
                 ]}
                 onPress={() => {
+                   guestLogin();
                   setShowLimitModal(false);
-                  // navigation.navigate('AuthStack' as any, { screen: 'Login' } as any);
-                  setGuest()
                 }}
               >
                 <Text style={[styles.modalButtonText, { color: colors.buttonText }]}>Sign Up / Log In</Text>
