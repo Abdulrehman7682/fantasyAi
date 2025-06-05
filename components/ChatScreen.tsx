@@ -1140,7 +1140,7 @@ const DateSeparator = React.memo(({ date }: DateSeparatorProps) => {
 export default function ChatScreen({ route }: ChatScreenProps) {
   const { colors, isDarkMode } = useTheme();
   const navigation = useNavigation<NavigationProp>();
-  const { user, isGuest } = useAuth();
+  const { user, isGuest, setGuest} = useAuth();
   const { character: routeCharacter } = route.params;
   const [character, setCharacter] = useState<Character | null>(routeCharacter);
   const [messages, setMessages] = useState<ListItem[]>([]);
@@ -1387,54 +1387,60 @@ export default function ChatScreen({ route }: ChatScreenProps) {
    */
   const uniqueId = Crypto.randomUUID();
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
+    if(isGuest){
+      console.log('user is guest');
+
+    }else{
+
+      const fetchMessages = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('message_and_subscription')
+            .select('message, user_id , sender')
+            .eq('user_id', user!.id)
+            .eq('character_id', characterIdNum)
+            .order('created_at', { ascending: true });
+  
+          console.log("data of user messages and subscription status:", data);
+          // Supabase se aaye data ko format karo
+          const formattedMessages: UIMessage[] = data!.map((item, index) => ({
+            id: `${index}-${item.message}-${item.created_at}`,
+            text: item.message,
+            sender: item.sender, // ya 'ai' agar ai ka bhi message hai
+            timestamp: Date.now(),
+            type: 'message',
+          }));
+          console.log("formatted messages:", formattedMessages);
+          const messagesWithSeparators = addDateSeparators(formattedMessages);
+          // console.error("error of user messages and subscription status:", error);
+          setMessages(messagesWithSeparators);
+          setMessagesCount(data?.length || 0); // Get the number of messages:
+  
+  
+  
+  
+  
+        } catch (error) {
+          console.error("Error fetching user messages and subscription status:", error);
+        }
         const { data, error } = await supabase
-          .from('message_and_subscription')
-          .select('message, user_id , sender')
+          .from('subscriptions')
+          .select('is_subscribed, user_id')
           .eq('user_id', user!.id)
-          .eq('character_id', characterIdNum)
-          .order('created_at', { ascending: true });
-
-        console.log("data of user messages and subscription status:", data);
-        // Supabase se aaye data ko format karo
-        const formattedMessages: UIMessage[] = data!.map((item, index) => ({
-          id: `${index}-${item.message}-${item.created_at}`,
-          text: item.message,
-          sender: item.sender, // ya 'ai' agar ai ka bhi message hai
-          timestamp: Date.now(),
-          type: 'message',
-        }));
-        console.log("formatted messages:", formattedMessages);
-        const messagesWithSeparators = addDateSeparators(formattedMessages);
-        // console.error("error of user messages and subscription status:", error);
-        setMessages(messagesWithSeparators);
-        setMessagesCount(data?.length || 0); // Get the number of messages:
-
-
-
-
-
-      } catch (error) {
-        console.error("Error fetching user messages and subscription status:", error);
+        console.log("data of subscription status:", data);
+        if (data) {
+          setUserSubscribed(data[0]?.is_subscribed);
+        } else {
+          setUserSubscribed(false);
+        }
       }
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('is_subscribed, user_id')
-        .eq('user_id', user!.id)
-      console.log("data of subscription status:", data);
-      if (data) {
-        setUserSubscribed(data[0]?.is_subscribed);
-      } else {
-        setUserSubscribed(false);
-      }
+      fetchMessages();
+      console.log("messagesCount:", messagesCount, "userSubscribed:", userSubscribed);
+      console.log("userid", user!.id)
     }
-    fetchMessages();
-    console.log("messagesCount:", messagesCount, "userSubscribed:", userSubscribed);
-    console.log("userid", user!.id)
 
 
-  }, [messagesCount]);
+  }, [messagesCount, guestMessageCount]);
 
   const fetchApiKeyFromSupabase = async (keyName: string): Promise<string | null> => {
     const { data, error } = await supabase
@@ -1447,6 +1453,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error("Error fetching API key:", error);
       return null;
     }
+    console.log("data of api key" , data.api_key)
 
     return data?.api_key || null;
   };
@@ -1496,10 +1503,12 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
     // Increment guest count and save user message for guests
     if (isGuest) {
-      const newCount = guestMessageCount + 1;
-      if (isMounted.current) setGuestMessageCount(newCount);
+      //setGuestMessageCount(prevCount => prevCount + 1); // Increment guest message count
+       const newCount = guestMessageCount + 1;
+       if (isMounted.current) setGuestMessageCount(newCount);
       await AsyncStorage.setItem(`guestMessageCount_${characterIdNum}`, newCount.toString());
       await saveGuestMessage(characterIdNum, userMessage); // <-- Save user message for guest
+      console.log("Guest message saved:", userMessage);
     }
     // getting user messages and subscription status before sending messages
 
@@ -1947,7 +1956,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [character, user]); // Rerun only if character or user changes
+  }, [character, user, guestMessageCount]); // Rerun only if character or user changes
 
   // --- Render Functions ---
 
@@ -2121,7 +2130,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
                 ]}
                 onPress={() => {
                   setShowLimitModal(false);
-                  navigation.navigate('AuthStack' as any, { screen: 'Login' } as any);
+                  // navigation.navigate('AuthStack' as any, { screen: 'Login' } as any);
+                  setGuest()
                 }}
               >
                 <Text style={[styles.modalButtonText, { color: colors.buttonText }]}>Sign Up / Log In</Text>

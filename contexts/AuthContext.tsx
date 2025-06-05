@@ -40,6 +40,7 @@ interface AuthContextInterface {
   markDiscountOfferShown: () => Promise<void>; // Kept for API compatibility, though logic is now minimal
   decrementCredits: (amount: number) => Promise<boolean>; // Added decrement function
   signInFromStorage: () => Promise<void>; // ✅ Added here
+  setGuest: () => Promise<void>; // ✅ Added here
 }
 
 const AuthContext = createContext<AuthContextInterface | undefined>(undefined);
@@ -75,6 +76,10 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 
     getUserFromStorage();
   }, []);
+
+  const setGuest = () =>{
+    setIsGuest(false)
+  }
   const signInFromStorage = async () => {
   const storedUser = await AsyncStorage.getItem('user');
   if (storedUser) {
@@ -512,8 +517,9 @@ createSubscriptionUser(data?.user?.id!);
     shouldShowDiscountOffer,
     markDiscountOfferShown,
     decrementCredits,
-    signInFromStorage
-  }), [user , isGuest, isSubscribed, guestMessageCount, freeMessageCount, credits , signInFromStorage]); // Added isSubscribed, freeMessageCount to dependencies
+    signInFromStorage,
+    setGuest
+  }), [user , isGuest, isSubscribed, guestMessageCount, freeMessageCount, credits , signInFromStorage , setGuest]); // Added isSubscribed, freeMessageCount to dependencies
 
   return (
     <AuthContext.Provider value={value}>

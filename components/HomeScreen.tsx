@@ -45,7 +45,7 @@ interface ChatCharacter {
   model?: string; // Add model field
   system_prompt?: string; // Add system prompt field
   subTasks?: string[]; // Added field for important subtasks/prompts
-}import Superwall from '@superwall/react-native-superwall';
+}
 
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -219,20 +219,9 @@ const HomeScreen = () => {
         };
       }
 
-      // //Add m 
-      //   // ⭐ Update used count
-      //   if (!isSubscribed) {
-      //     setFreeCharactersUsed(prev => prev + 1);
-      //   }
-      // if (!isSubscribed && !freeCharactersUsed.includes(category.id)) {
-      //   const updatedUsedChars = [...freeCharactersUsed, category.id];
-      //   setFreeCharactersUsed(updatedUsedChars);
-      //   await AsyncStorage.setItem('freeCharactersUsed', JSON.stringify(updatedUsedChars));
-      //   // await AsyncStorage.removeItem('freeCharactersUsed');
-
-      // }
       console.info(`[HomeScreen] Navigating to Chat with Assistant ID: ${characterToPass.id}, Name: ${characterToPass.name}`);
       console.debug("[HomeScreen] Character data being passed:", characterToPass);
+      
       navigation.navigate('Chat', { character: characterToPass });
 
     } catch (error) {
