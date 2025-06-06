@@ -20,12 +20,25 @@ const { width } = Dimensions.get('window');
 export default function SubscribeScreen() {
   const [showPaywall, setShowPaywall] = useState(false);
   const navigation = useNavigation();
-  const { user, isGuest } = useAuth();
+  const { user, isGuest , setGuest } = useAuth();
 
   useEffect(() => {
     Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
     console.log('RevenueCat Initialized successfully');
+    const fetchCustomerInfo = async () => {
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        console.log('Customer Info:', customerInfo);
+      } catch (error) {
+        console.error('Error fetching customer info:', error);
+      }
+    };
+    fetchCustomerInfo();
   }, []);
+
+  const loginGo = () => {
+    setGuest();
+  };
 
   const handleSubscribe = () => {
     if (isGuest) {
@@ -36,7 +49,7 @@ export default function SubscribeScreen() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Login',
-            onPress: () => navigation.navigate('SubscriptionScreen'),
+            onPress: () => loginGo(),
           },
         ],
         { cancelable: true }
@@ -52,8 +65,8 @@ export default function SubscribeScreen() {
   .eq('user_id', user!.id)
   .select()
   console.log("data from new" , data)
-     const customerInfo = await Purchases.getCustomerInfo();
-     console.log("customerInfoUser", customerInfo);
+    const customerInfo = await Purchases.getCustomerInfo();
+    console.log('✅ Subscription info from RevenueCat:', customerInfo);
   }
 
   const handleGoBack = () => {
