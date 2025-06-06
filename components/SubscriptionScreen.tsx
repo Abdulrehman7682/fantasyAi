@@ -20,25 +20,12 @@ const { width } = Dimensions.get('window');
 export default function SubscribeScreen() {
   const [showPaywall, setShowPaywall] = useState(false);
   const navigation = useNavigation();
-  const { user, isGuest , setGuest } = useAuth();
+  const { user, isGuest } = useAuth();
 
   useEffect(() => {
     Purchases.configure({ apiKey: 'goog_TYefKLFczjVYSNRiGHwWaTYnTpm' });
     console.log('RevenueCat Initialized successfully');
-    const fetchCustomerInfo = async () => {
-      try {
-        const customerInfo = await Purchases.getCustomerInfo();
-        console.log('Customer Info:', customerInfo);
-      } catch (error) {
-        console.error('Error fetching customer info:', error);
-      }
-    };
-    fetchCustomerInfo();
   }, []);
-
-  const loginGo = () => {
-    setGuest();
-  };
 
   const handleSubscribe = () => {
     if (isGuest) {
@@ -49,7 +36,7 @@ export default function SubscribeScreen() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Login',
-            onPress: () => loginGo(),
+            onPress: () => navigation.navigate('SubscriptionScreen'),
           },
         ],
         { cancelable: true }
@@ -65,44 +52,8 @@ export default function SubscribeScreen() {
   .eq('user_id', user!.id)
   .select()
   console.log("data from new" , data)
-    try {
-    const customerInfo = await Purchases.getCustomerInfo();
-    console.log('✅ Subscription info from RevenueCat:', customerInfo);
-
-    const entitlements = customerInfo.entitlements.active;
-    const activeKeys = Object.keys(entitlements);
-
-    if (activeKeys.length === 0) {
-      Alert.alert("Subscription Error", "No active entitlements found.");
-      return;
-    }
-
-    const entitlement = entitlements[activeKeys[0]];
-
-    const { data, error } = await supabase
-      .from('purchases_info') // 🟢 your new table
-      .upsert({
-        user_id: user!.id,
-        entitlement_id: activeKeys[0],
-        product_identifier: entitlement.productIdentifier,
-        purchase_date: entitlement.purchaseDate,
-        expiration_date: entitlement.expirationDate,
-        is_subscribed: true
-      }, { onConflict: ['user_id'] });
-
-    if (error) {
-      console.error("❌ Failed to save to purchases_info:", error);
-    } else {
-      console.log("✅ Subscription saved to purchases_info:", data);
-      navigation.navigate('ThankYouScreen');
-    }
-
-    setShowPaywall(false);
-    
-  } catch (error) {
-    console.error('❌ Error during subscription:', error);
-    Alert.alert('Error', 'Could not process subscription.');
-  }
+     const customerInfo = await Purchases.getCustomerInfo();
+     console.log("customerInfoUser", customerInfo);
   }
 
   const handleGoBack = () => {
@@ -119,7 +70,7 @@ export default function SubscribeScreen() {
         onPurchaseCompleted={() => {
           handleUpdateSubscriptionStatus();
           setShowPaywall(false);
-            // navigation.navigate('ThankYouScreen'); // Navigate to Thank You screen
+            navigation.navigate('ThankYouScreen'); // Navigate to Thank You screen
           console.log('Paywall dismissed');
         }}
       />
