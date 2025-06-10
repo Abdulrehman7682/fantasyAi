@@ -30,7 +30,7 @@
       "permissions": [
         "com.android.vending.BILLING"
       ],
-       "versionCode": 14,
+       "versionCode": 16,
       "package": "com.fantasyai.app",
       "intentFilters": [
         {
