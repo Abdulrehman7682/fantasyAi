@@ -362,18 +362,18 @@ export default function LoginScreen({ navigation }: { navigation: LoginScreenNav
             </TouchableOpacity>
 
             {/* Sign up and forgot password links */}
-            <View style={styles.linksContainer}>
-              <TouchableOpacity onPress={navigateToSignUp}>
-                <Text style={styles.linkText}>Sign up</Text>
-              </TouchableOpacity>
+            {/* <View style={styles.linksContainer}> */}
+              {/* <TouchableOpacity onPress={navigateToSignUp}> */}
+                {/* <Text style={styles.linkText}>Sign up</Text> */}
+              {/* </TouchableOpacity> */}
 
-              <Text style={styles.linkSeparator}>•</Text>
+              {/* <Text style={styles.linkSeparator}>•</Text> */}
 
               {/* Add navigation for Forgot Password if needed */}
-              <TouchableOpacity>
-                <Text style={styles.linkText}>Forgot password?</Text>
-              </TouchableOpacity>
-            </View>
+              {/* <TouchableOpacity> */}
+                {/* <Text style={styles.linkText}>Forgot password?</Text> */}
+              {/* </TouchableOpacity> */}
+            {/* </View> */}
 
             {/* Developer option to reset onboarding */}
             <TouchableOpacity
@@ -428,13 +428,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginBottom: 8, // Reduced space
+    marginTop: 0, // Reduced space
     textAlign: 'center',
   },
   subGreeting: {
     fontSize: 16,
     color: colors.textSecondary, // Use defined secondary text color
     textAlign: 'center',
-    marginBottom: 20, // Add some margin below subtitle
+    marginBottom: 65, // Add some margin below subtitle
   },
   footerContent: {
     // Removed marginBottom, rely on contentContainer paddingBottom
@@ -474,8 +475,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10, // Space above guest button
-    marginBottom: 25, // Space below guest button
+    // marginTop: 10, // Space above guest button
+    marginBottom: 15, // Space below guest button
   },
   guestButtonText: {
     color: colors.guestButtonText, // Use defined guest button text color

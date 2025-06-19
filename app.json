@@ -28,7 +28,8 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "com.android.vending.BILLING"
+        "com.android.vending.BILLING",
+        "RECORD_AUDIO"
       ],
        "versionCode": 16,
       "package": "com.fantasyai.app",

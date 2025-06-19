@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, StyleSheet, SafeAreaView, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, ImageSourcePropType } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, ImageSourcePropType, Dimensions, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,6 +14,7 @@ import RevenueCatUI from 'react-native-purchases-ui';
 import Purchases from 'react-native-purchases';
 import { supabase } from '../utils/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ChevronRight } from 'lucide-react-native'; // Or use any icon lib
 
 // Define Category type (make sure it includes all used fields)
 export interface Category {
@@ -59,6 +60,30 @@ const HomeScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isLoading, setIsLoading] = useState(false);
   const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
+ const prompts = [
+  { title: "Tell me a joke", category: "Funny" },
+  { title: "Why did the chicken cross the road?", category: "Funny" },
+  { title: "Funniest thing that happened today?", category: "Funny" },
+  
+  { title: "Give me daily motivation", category: "Motivational" },
+  { title: "How to stay consistent?", category: "Motivational" },
+  { title: "Quote to start my day", category: "Motivational" },
+
+  { title: "Write a romantic poem", category: "Romantic" },
+  { title: "Best romantic gift ideas?", category: "Romantic" },
+  { title: "Cute message for my partner", category: "Romantic" },
+
+  { title: "Tell me a sad story", category: "Sad" },
+  { title: "Make me emotional", category: "Sad" },
+  { title: "Heartbreaking moment in history", category: "Sad" },
+
+  { title: "Give me random facts", category: "Other" },
+  { title: "Surprise me with something cool", category: "Other" },
+  { title: "What’s something most people don’t know?", category: "Other" },
+];
+const filters = ['All', 'Funny', 'Motivational', 'Romantic', 'Sad', 'Other'];
+
+ const [selectedFilter, setSelectedFilter] = useState('All');
 
   //Add M
   // const [freeCharactersUsed, setFreeCharactersUsed] = useState(0);
@@ -236,7 +261,8 @@ const HomeScreen = () => {
     }
   };
 
-  const categoryGroups = ['All', ...new Set(categories.map(cat => cat.group))];
+ const categoryGroups = ['All', ...new Set(categories.map(cat => cat.group))];
+ 
 
   // Memoize styles to prevent recreation on every render unless colors change
   const styles = useMemo(() => StyleSheet.create({
@@ -256,13 +282,26 @@ const HomeScreen = () => {
       marginTop: 30,
       marginBottom: 28,
     },
-    greeting: {
-      fontSize: 28,
-      marginTop: 5,// Further reduced font size
-      fontWeight: '700',
-      color: colors.text,
-      marginBottom: 4, // Slightly reduced margin
-    },
+     appBar: {
+    height: 60,
+    backgroundColor: '#6200EE',
+    borderRadius : 30,
+    marginTop: insets.top,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    elevation: 4, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  greeting: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
     subheading: {
       fontSize: 18,
       color: colors.secondaryText,
@@ -281,36 +320,58 @@ const HomeScreen = () => {
       paddingVertical: 8,
     },
     filterButton: {
-      paddingHorizontal: 18,
-      paddingVertical: 10,
-      borderRadius: 24,
-      marginRight: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+      marginRight: 10,
       backgroundColor: colors.cardBg,
     },
+    filterButton2: {
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  backgroundColor: "black",
+  borderRadius: 20,
+  marginRight: 8,
+  marginBottom: 10,
+},
+    filterButtonActive: {
+  backgroundColor: colors.cardBg,
+},
+filterButtonText2: {
+    color: colors.text,
+      fontSize: 13,
+      fontWeight: '500',
+},
+filterButtonTextActive: {
+  color: '#fff',
+},
     filterButtonSelected: {
       backgroundColor: colors.primary,
     },
     filterButtonText: {
       color: colors.text,
-      fontSize: 15,
+      fontSize: 13,
       fontWeight: '500',
     },
     filterButtonTextSelected: {
       color: colors.buttonText,
       fontWeight: '600',
     },
-    tilesGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      paddingBottom: 24,
-    },
-    tileContainer: {
-      width: '48%',
-      marginBottom: 16,
-      aspectRatio: 1.2,
-      height: undefined,
-    },
+   tilesGrid: {
+  flexDirection: 'row', // Keep row direction
+  flexWrap: 'wrap', // Change from wrap to nowrap for horizontal scroll
+  justifyContent: 'flex-start', // Change from space-between
+  paddingBottom: 20,
+  overflow: 'visible', // Ensure tiles are fully visible
+},
+tileContainer: {
+  width: Dimensions.get('window').width / 2.4, // Slightly less than half for spacing
+  marginRight: 7, // Add horizontal spacing
+  marginBottom: 1,
+  aspectRatio: 1.1,
+  height: undefined,
+  flexShrink: 0, // Prevent shrinking
+},
     loadingOverlay: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: colors.overlay,
@@ -353,6 +414,63 @@ const HomeScreen = () => {
       fontSize: 14,
       fontWeight: 'bold',
     },
+    // Add this in your styles
+listItem: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingVertical: 10,
+  paddingHorizontal: 16,
+  borderBottomWidth: 1,
+  borderTopWidth: 1,
+  borderLeftWidth: 1,
+  borderRightWidth: 1,
+  borderColor: colors.border, // light gray
+  backgroundColor: colors.cardBg,
+  borderRadius: 10,
+  marginBottom: 5,
+},
+listText: {
+  fontSize: 13,
+  color: colors.text,
+  flex: 1,
+},
+listIcon: {
+  marginLeft: 8,
+  color:'#ff2e63',
+},
+getProButton: {
+  // backgroundColor: '#FFA500',
+  // height: 40,
+  paddingVertical: 3,
+  paddingHorizontal: 6,
+  borderRadius: 0,
+},
+getProGradient: {
+  paddingVertical: 3,
+  paddingHorizontal: 14,
+  borderRadius: 12,
+  shadowColor: '#FFD700',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.4,
+  shadowRadius: 6,
+  elevation: 6, // For Android shadow
+},
+getProText: {
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: 14,
+  textShadowColor: 'rgba(0, 0, 0, 0.3)',
+  textShadowOffset: { width: 0, height: 1 },
+  textShadowRadius: 1,
+},
+quickAction : {
+  color: colors.primary,
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 20,
+  
+}
 
   }), [colors]);
 
@@ -373,6 +491,7 @@ const HomeScreen = () => {
       </View>
     );
   };
+  
 
   const filteredCategories = selectedCategory === 'All'
     ? categories
@@ -398,6 +517,35 @@ const HomeScreen = () => {
       </TouchableOpacity>
     );
   };
+  // Calculate half the categories
+const halfLength = Math.ceil(filteredCategories.length / 2);
+const firstHalf = filteredCategories.slice(0, halfLength);
+const secondHalf = filteredCategories.slice(halfLength);
+const renderCategorySection = (categories: Category[]) => (
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.tilesGrid}
+  >
+    {categories.map((category) => (
+      <View key={category.id} style={styles.tileContainer}>
+        <CategoryTile
+          title={category.title}
+          subtitle={category.description}
+          iconName={category.iconName}
+          colors={category.colors}
+          onPress={() => handleCategoryPress(category, handleSubscribe)}
+        />
+      </View>
+    ))}
+  </ScrollView>
+);
+
+   const filteredPrompts =
+    selectedFilter === 'All'
+      ? prompts
+      : prompts.filter(item => item.category === selectedFilter);
+
 
   return (
     <View style={styles.container}>
@@ -410,7 +558,7 @@ const HomeScreen = () => {
         <ScrollView showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: !userSubscribed ? 40 : 0 }}
         >
-          {!userSubscribed && (
+          {/* {!userSubscribed && (
             <TouchableOpacity
               onPress={() => navigation.navigate('SubscriptionScreen')}
               activeOpacity={0.9}
@@ -430,15 +578,28 @@ const HomeScreen = () => {
                 </View>
               </LinearGradient>
             </TouchableOpacity>
-          )}
+          )} */}
 
           <View style={!userSubscribed ? styles.header : styles.header2}>
-            <Text style={styles.greeting}>
-              {getWelcomeMessage()}
-            </Text>
-            <Text style={styles.subheading}>
+            <View style={styles.appBar}>
+  <Text style={styles.greeting}>{getWelcomeMessage()}</Text>
+
+  {!userSubscribed && (
+    <TouchableOpacity  onPress={() => navigation.navigate('SubscriptionScreen')} style={styles.getProButton}>
+    <LinearGradient
+      colors={[ '#1bffff','#008192']} // Adjust colors for branding
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.getProGradient}
+    >
+      <Text style={styles.getProText}>PRO</Text>
+    </LinearGradient>
+  </TouchableOpacity>
+  )}
+</View>
+            {/* <Text style={styles.subheading}>
               Explore your path to growth
-            </Text>
+            </Text> */}
             {credits !== null && (
               <Text style={styles.creditsCounter}>
                 Credits: {credits}
@@ -455,10 +616,105 @@ const HomeScreen = () => {
               {categoryGroups.map(renderCategoryFilter)}
             </ScrollView>
           </View>
+          
 
-          <View style={styles.tilesGrid}>
+          {/* <View style={styles.tilesGrid}>
+            <ScrollView
+            horizontal={true}
+            scrollEnabled = {true}
+            showsHorizontalScrollIndicator={false}
+            >
+
             {filteredCategories.map(renderCategoryTile)}
+            </ScrollView>
           </View>
+           <View style={styles.tilesGrid}>
+            <ScrollView
+            horizontal={true}
+            scrollEnabled = {true}
+            showsHorizontalScrollIndicator={false}
+            >
+
+            {filteredCategories.map(renderCategoryTile)}
+            </ScrollView>
+          </View> */}
+          {/* In your render return: */}
+{/* <View> */}
+  {/* First half of categories */}
+  {/* <ChevronRight size= {40} style={styles.listIcon} /> */}
+  {/* {renderCategorySection(firstHalf)} */}
+  
+  {/* Spacer between sections */}
+  {/* <View/> */}
+  <View>
+  {/* Second half of categories */}
+  {renderCategorySection(filteredCategories)}
+</View>
+{/* <View style={styles.filterContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterScroll}
+            >
+              {categoryGroups.map(renderCategoryFilter)}
+            </ScrollView>
+          </View> */}
+           {/* <View style={styles.tilesGrid}>
+            <ScrollView
+            horizontal={true}
+            scrollEnabled = {true}
+            showsHorizontalScrollIndicator={false}
+            >
+
+            {filteredCategories.map(renderCategoryTile)}
+            </ScrollView>
+          </View> */}
+      <View>
+      <Text style={styles.quickAction}>Quick Actions</Text>
+
+      {/* Filter Buttons */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 10, marginBottom: 10 }}
+      >
+        {filters.map(filter => (
+          <TouchableOpacity
+            key={filter}
+            onPress={() => setSelectedFilter(filter)}
+            style={[
+              styles.filterButton2,
+              selectedFilter === filter && styles.filterButtonActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.filterButtonText2,
+                selectedFilter === filter && styles.filterButtonTextActive,
+              ]}
+            >
+              {filter}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Filtered Prompt List */}
+      <FlatList
+        data={filteredPrompts}
+        keyExtractor={(item) => item.title}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.listItem}
+            onPress={() => handleCategoryPress(item.title, handleSubscribe)}
+          >
+            <Text style={styles.listText}>{item.title}</Text>
+            <ChevronRight size={20} style={styles.listIcon} />
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      />
+    </View>
         </ScrollView>
       </SafeAreaView>
     </View>

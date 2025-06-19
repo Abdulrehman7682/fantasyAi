@@ -47,6 +47,25 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState('');
   const [newBio, setNewBio] = useState('');
+  const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
+
+
+   const fetchUserSubscriptionStatus = async () => {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('is_subscribed, user_id')
+        .eq('user_id', user!.id)
+      console.log("data of subscription status:", data);
+      if (data) {
+        setUserSubscribed(data[0]?.is_subscribed);
+      } else {
+        setUserSubscribed(false);
+      }
+    }
+  
+    useEffect(() => {
+      fetchUserSubscriptionStatus();
+    }, [user, userSubscribed]);
 
   // Load profile data
   useEffect(() => {
@@ -214,6 +233,9 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
   }, [contextSignOut]);
 
   const renderGoProButton = () => {
+    if (userSubscribed) {
+      return null; // Don't show Go Pro button if user is already subscribed
+    }else{
     return (
       <TouchableOpacity
         style={styles.goProContainer}
@@ -240,6 +262,7 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
         </LinearGradient>
       </TouchableOpacity>
     );
+    }
   };
 
   // Display loading indicator
@@ -364,7 +387,7 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
           </View>
           
           <View style={styles.nameContainer}>
-            <Text style={[styles.userName, { color: colors.text }]}>{profileData.name || 'Guest User'}</Text>
+            <Text style={[styles.userName, { color: colors.text }]}>{profileData.name || 'Set user name'}</Text>
             {!isEditingDisplayName && (
               <TouchableOpacity onPress={handleEditDisplayNameClick} style={styles.editIcon}>
                 <Ionicons name="pencil-outline" size={18} color={colors.secondaryText} />
