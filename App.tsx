@@ -43,6 +43,7 @@ import TermsAndConditionsScreen from './components/TermsAndConditionsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import { LoginProvider, navigationRef } from 'contexts/LoginContext';
 import ThankYouScreen from './components/ThankYouScreen';
+import MessageScreen from './components/MessageScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -68,6 +69,7 @@ type RootStackParamList = {
   TermsAndConditions: undefined;
   PrivacyPolicy: undefined;
     ThankYouScreen: undefined; // 👈 Add this line
+    MessageScreen: undefined; // 👈 Add this line
 };
 
 type MainTabsParamList = {
@@ -220,6 +222,7 @@ const Navigation = () => {
           <>
             <Stack.Screen name="MainTabs" component={MainTabNavigator} />
             <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="MessageScreen" component={MessageScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
@@ -318,6 +321,7 @@ function AppContent() {
           <>
             <Stack.Screen name="MainTabs" component={MainTabNavigator} />
             <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="MessageScreen" component={MessageScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />

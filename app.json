@@ -18,6 +18,9 @@
       "supportsTablet": true,
       "usesAppleSignIn": true,
       "bundleIdentifier": "com.fantasyai.app",
+        "infoPlist": {
+        "NSMicrophoneUsageDescription": "This app needs microphone access to record audio"
+      },
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -57,7 +60,13 @@
           "merchantIdentifier": "merchant.com.fantasyai.app",
           "enableGooglePay": true
         }
-      ]
+      ],
+       [
+      "expo-av",
+      {
+        "microphonePermission": "Allow Fantasy AI to access your microphone."
+      }
+       ]
     ],
     "scheme": "fantasyai",
     "extra": {

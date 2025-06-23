@@ -1249,81 +1249,53 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     // Update UI based on status if needed (e.g., show recording duration)
   }, [recording, setRecording, setIsRecording]); // Add dependencies
 
-  const stopRecording = useCallback(async (save = true) => {
-    if (!recording) {
-      console.warn("stopRecording called but no recording object exists.");
-      setIsRecording(false); // Ensure state consistency
-      return;
-    }
-
-    console.log('Stopping recording..');
+ const stopRecording = async () => {
+  try {
+    await recording?.stopAndUnloadAsync();
+    const uri = recording?.getURI();
+    // Do something with the recording URI
+  } catch (error) {
+    console.error('Failed to stop recording:', error);
+  } finally {
+    setRecording(null);
     setIsRecording(false);
-    try {
-      await recording.stopAndUnloadAsync();
-      await Audio.setAudioModeAsync({ // Reset audio mode
-        allowsRecordingIOS: false,
-      });
-      const uri = recording.getURI();
-      console.log('Recording stopped and stored at', uri);
-
-      if (save && uri) {
-        // Read the file and get base64 data
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        if (isMounted.current) {
-          setStagedMedia({
-            uri: uri,
-            base64: base64,
-            type: 'audio',
-            mimeType: 'audio/m4a', // Adjust if using a different format
-          });
-        }
-      } else if (!save) {
-        console.log("Recording discarded.");
-      }
-    } catch (error) {
-      console.error('Failed to stop recording', error);
-      Alert.alert("Error", "Could not stop recording properly.");
-    } finally {
-      if (isMounted.current) {
-        setRecording(null); // Clear the recording object in state
-      }
-    }
-  }, [recording, setIsRecording, setRecording, setStagedMedia]); // <-- Added dependencies
+  }
+};
 
   const startRecording = useCallback(async () => {
-    try {
-      const permission = await Audio.requestPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert("Permission required", "You need to grant microphone permission to record audio.");
-        return;
-      }
-
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      console.log('Starting recording..');
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY,
-        onRecordingStatusUpdate // Pass the status update handler
-      );
-      if (isMounted.current) {
-        setRecording(recording);
-        setIsRecording(true);
-      }
-      console.log('Recording started');
-
-    } catch (err) {
-      console.error('Failed to start recording', err);
-      Alert.alert("Error", "Could not start recording.");
-      if (isMounted.current) {
-        setIsRecording(false); // Ensure state is correct on error
-        setRecording(null);
-      }
+      try {
+    // Request permissions and check status
+    const { status } = await Audio.requestPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Microphone permission is required to record audio');
+      return null;
     }
+
+    // Configure audio mode
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true, // Optional: if you want recording in background
+      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+    });
+    console.log('INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS:', Audio.INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS);  
+
+    // Create and start recording
+    const recording = new Audio.Recording();
+    await recording.prepareToRecordAsync(
+      Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+    );
+    await recording.startAsync();
+
+    return recording;
+  } catch (error) {
+    console.error('Failed to start recording:', error);
+    alert('Failed to start recording: ' + error.message);
+    return null;
+  }
+
   }, [setIsRecording, setRecording, onRecordingStatusUpdate]); // <-- Added dependencies
 
   /**

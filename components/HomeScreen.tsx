@@ -81,7 +81,7 @@ const HomeScreen = () => {
   { title: "Surprise me with something cool", category: "Other" },
   { title: "What’s something most people don’t know?", category: "Other" },
 ];
-const filters = ['All', 'Funny', 'Motivational', 'Romantic', 'Sad', 'Other'];
+const filters = ['Funny', 'Motivational', 'Romantic', 'Sad', 'Other'];
 
  const [selectedFilter, setSelectedFilter] = useState('All');
 
@@ -161,6 +161,11 @@ const filters = ['All', 'Funny', 'Motivational', 'Romantic', 'Sad', 'Other'];
   //   };
   //   loadUsedCharacters();
   // }, []);
+
+  
+  const handleMessagePress = (prompt: string) => {
+    navigation.navigate('MessageScreen', { initialUserMessage: prompt });
+  };
 
   const handleCategoryPress = async (category: Category, subscribeHandler: SubscribeHandler) => {
     console.log(`[HomeScreen] Category tile pressed: ${category.title} (ID: ${category.id})`);
@@ -329,7 +334,7 @@ const filters = ['All', 'Funny', 'Motivational', 'Romantic', 'Sad', 'Other'];
     filterButton2: {
   paddingVertical: 6,
   paddingHorizontal: 12,
-  backgroundColor: "black",
+  backgroundColor: colors.cardBg,
   borderRadius: 20,
   marginRight: 8,
   marginBottom: 10,
@@ -343,7 +348,11 @@ filterButtonText2: {
       fontWeight: '500',
 },
 filterButtonTextActive: {
-  color: '#fff',
+  color:"white",
+   backgroundColor: colors.primary,
+   borderRadius: 20,
+   paddingHorizontal: 8,
+   paddingVertical: 5,
 },
     filterButtonSelected: {
       backgroundColor: colors.primary,
@@ -354,7 +363,8 @@ filterButtonTextActive: {
       fontWeight: '500',
     },
     filterButtonTextSelected: {
-      color: colors.buttonText,
+      color:"white",
+   backgroundColor: colors.primary,
       fontWeight: '600',
     },
    tilesGrid: {
@@ -706,7 +716,7 @@ const renderCategorySection = (categories: Category[]) => (
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.listItem}
-            onPress={() => handleCategoryPress(item.title, handleSubscribe)}
+            onPress={() => handleMessagePress(item.title, handleSubscribe)}
           >
             <Text style={styles.listText}>{item.title}</Text>
             <ChevronRight size={20} style={styles.listIcon} />
