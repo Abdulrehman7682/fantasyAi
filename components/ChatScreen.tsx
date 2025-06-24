@@ -7,6 +7,7 @@ import { StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { startOfToday } from "date-fns";
 import Purchases from 'react-native-purchases';
+import AudioRecorder from './AudioRecorder';
 import {
   View,
   Text,
@@ -48,6 +49,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OPENROUTER_API_KEY, AI_MODELS, CHARACTER_PROMPTS } from '../utils/aiConfig';
 
+
+const recorder = new AudioRecorder();
 // --- Types and Interfaces ---
 
 type GuestChatSessionData = {
@@ -121,6 +124,7 @@ interface ChatInputProps {
   handlePressOutSend: () => void;
   onMicPress?: () => void;
   onAttachPress?: () => void;
+  onCameraPress?: () => void;
   stagedMedia: StagedMedia | null;
   clearStagedMedia: () => void;
   isRecording: boolean;
@@ -709,6 +713,13 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
         // User message bubble
         <View style={styles.userMessageContainer}>
           <View style={styles.userMessageBubble}>
+            {item.image_url && (
+              <Image
+                source={{ uri: item.image_url }}
+                style={{ width: 200, height: 150, borderRadius: 10, marginBottom: 8 }}
+                resizeMode="cover"
+              />
+            )}
             <Text style={styles.userMessageText}>{item.text}</Text>
             <View style={styles.timestampReadStatusContainer}>
               <Text style={styles.userTimestamp}>{formattedTime}</Text>
@@ -796,6 +807,7 @@ const ChatInput = React.memo(({
   handlePressOutSend,
   onMicPress,
   onAttachPress,
+  onCameraPress,
   stagedMedia,
   clearStagedMedia
 }: ChatInputProps) => {
@@ -950,7 +962,7 @@ const ChatInput = React.memo(({
         </Pressable>
 
         <Pressable
-          onPress={() => console.log('Camera pressed')}
+          onPress={onCameraPress}
           disabled={isAISpeaking}
           style={({ pressed }) => [
             styles.inputActionButton,
@@ -1140,7 +1152,7 @@ const DateSeparator = React.memo(({ date }: DateSeparatorProps) => {
 export default function ChatScreen({ route }: ChatScreenProps) {
   const { colors, isDarkMode } = useTheme();
   const navigation = useNavigation<NavigationProp>();
-  const { user, isGuest, setGuest} = useAuth();
+  const { user, isGuest, setGuest } = useAuth();
   const { character: routeCharacter } = route.params;
   const [character, setCharacter] = useState<Character | null>(routeCharacter);
   const [messages, setMessages] = useState<ListItem[]>([]);
@@ -1149,7 +1161,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stagedMedia, setStagedMedia] = useState<StagedMedia | null>(null);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [chatTheme, setChatTheme] = useState<ChatTheme>(CHAT_THEMES[0]); // <-- This state holds the theme
@@ -1234,125 +1245,91 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   }, [setInputText]); // <-- Added dependency
 
   /**
-   * Recording status update handler
-   */
-  const onRecordingStatusUpdate = useCallback((status: Audio.RecordingStatus) => {
-    if (!isMounted.current) return; // Check if component is still mounted
-    if (!status.isRecording) {
-      // If recording stops unexpectedly, ensure state is updated
-      if (recording) { // Check if we thought we were recording
-        console.warn("Recording stopped unexpectedly");
-        setRecording(null);
-        setIsRecording(false);
-      }
-    }
-    // Update UI based on status if needed (e.g., show recording duration)
-  }, [recording, setRecording, setIsRecording]); // Add dependencies
-
- const stopRecording = async () => {
-  try {
-    await recording?.stopAndUnloadAsync();
-    const uri = recording?.getURI();
-    // Do something with the recording URI
-  } catch (error) {
-    console.error('Failed to stop recording:', error);
-  } finally {
-    setRecording(null);
-    setIsRecording(false);
-  }
-};
-
-  const startRecording = useCallback(async () => {
-      try {
-    // Request permissions and check status
-    const { status } = await Audio.requestPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Microphone permission is required to record audio');
-      return null;
-    }
-
-    // Configure audio mode
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: true,
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true, // Optional: if you want recording in background
-      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
-      shouldDuckAndroid: true,
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-    });
-    console.log('INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS:', Audio.INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS);  
-
-    // Create and start recording
-    const recording = new Audio.Recording();
-    await recording.prepareToRecordAsync(
-      Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
-    );
-    await recording.startAsync();
-
-    return recording;
-  } catch (error) {
-    console.error('Failed to start recording:', error);
-    alert('Failed to start recording: ' + error.message);
-    return null;
-  }
-
-  }, [setIsRecording, setRecording, onRecordingStatusUpdate]); // <-- Added dependencies
-
-  /**
    * Handle pressing the microphone icon
    */
   const handleMicPress = useCallback(async () => {
-    if (isRecording) {
-      await stopRecording();
+    if (recorder.getIsRecording()) {
+      const uri = await recorder.stopRecording();
+      setIsRecording(false);
+      console.log('Recording URI:', uri);
     } else {
-      await startRecording();
+      await recorder.startRecording();
+      setIsRecording(true);
     }
-  }, [isRecording, startRecording, stopRecording]); // <-- Added dependencies
+  }, [setIsRecording]); // <-- Added dependencies
 
-  const pickImage = useCallback(async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        Alert.alert("Permission required", "You need to grant permission to access the photo library.");
-        return;
-      }
 
-      const pickerResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.6, // Reduce quality slightly for faster uploads
-        base64: true, // Request base64 data
-      });
 
-      if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
-        const asset = pickerResult.assets[0];
-        if (asset.uri && asset.base64) {
-          console.log("Image picked:", asset.uri.substring(0, 100) + "...");
-          if (isMounted.current) {
-            setStagedMedia({
-              uri: asset.uri,
-              base64: asset.base64,
-              type: 'image',
-              mimeType: asset.mimeType || 'image/jpeg', // Get mimeType if available
-            });
-          }
-        } else {
-          console.warn("Picked image missing URI or base64 data");
+  const pickOrCaptureImage = useCallback(
+    async (source: 'camera' | 'gallery') => {
+      try {
+        // Request permission based on source
+        const permissionResult =
+          source === 'camera'
+            ? await ImagePicker.requestCameraPermissionsAsync()
+            : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+          Alert.alert(
+            'Permission required',
+            `You need to grant permission to access the ${source === 'camera' ? 'camera' : 'photo library'}.`
+          );
+          return;
         }
+
+        // Open camera or gallery
+        const pickerResult =
+          source === 'camera'
+            ? await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 0.6,
+              base64: true,
+            })
+            : await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 0.6,
+              base64: true,
+            });
+
+        if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+          const asset = pickerResult.assets[0];
+          if (asset.uri && asset.base64) {
+            console.log(`${source} image selected:`, asset.uri);
+            if (isMounted.current) {
+              setStagedMedia({
+                uri: asset.uri,
+                base64: asset.base64,
+                type: 'image',
+                mimeType: asset.mimeType || 'image/jpeg',
+              });
+            }
+          } else {
+            console.warn("Image missing URI or base64");
+          }
+        }
+      } catch (error) {
+        console.error(`Error using ${source}:`, error);
+        Alert.alert("Error", `Could not access ${source}.`);
       }
-    } catch (error) {
-      console.error("Error picking image:", error);
-      Alert.alert("Error", "Could not pick image.");
-    }
-  }, [setStagedMedia]); // <-- Added dependency
+    },
+    [setStagedMedia]
+  );
+
 
   /**
    * Handle pressing the attachment icon
    */
   const handleAttachPress = useCallback(() => {
-    pickImage();
-  }, [pickImage]); // <-- Added dependency
+    pickOrCaptureImage('gallery')
+  }, [pickOrCaptureImage]); // <-- Added dependency
+  // handle camera input
+  const handleCameraPress = useCallback(() => {
+    pickOrCaptureImage('camera')
+  }, [pickOrCaptureImage]);
 
   const characterIdNum = Number(character!.id);
   /**
@@ -1361,10 +1338,10 @@ export default function ChatScreen({ route }: ChatScreenProps) {
    */
   const uniqueId = Crypto.randomUUID();
   useEffect(() => {
-    if(isGuest){
+    if (isGuest) {
       console.log('user is guest');
 
-    }else{
+    } else {
 
       const fetchMessages = async () => {
         try {
@@ -1374,7 +1351,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             .eq('user_id', user!.id)
             .eq('character_id', characterIdNum)
             .order('created_at', { ascending: true });
-  
+
           console.log("data of user messages and subscription status:", data);
           // Supabase se aaye data ko format karo
           const formattedMessages: UIMessage[] = data!.map((item, index) => ({
@@ -1382,6 +1359,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             text: item.message,
             sender: item.sender, // ya 'ai' agar ai ka bhi message hai
             timestamp: Date.now(),
+            // image_url: stagedMedia,
             type: 'message',
           }));
           console.log("formatted messages:", formattedMessages);
@@ -1389,11 +1367,11 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           // console.error("error of user messages and subscription status:", error);
           setMessages(messagesWithSeparators);
           setMessagesCount(data?.length || 0); // Get the number of messages:
-  
-  
-  
-  
-  
+
+
+
+
+
         } catch (error) {
           console.error("Error fetching user messages and subscription status:", error);
         }
@@ -1427,7 +1405,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error("Error fetching API key:", error);
       return null;
     }
-    console.log("data of api key" , data.api_key)
+    console.log("data of api key", data.api_key)
 
     return data?.api_key || null;
   };
@@ -1478,59 +1456,15 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     // Increment guest count and save user message for guests
     if (isGuest) {
       //setGuestMessageCount(prevCount => prevCount + 1); // Increment guest message count
-       const newCount = guestMessageCount + 1;
-       if (isMounted.current) setGuestMessageCount(newCount);
+      const newCount = guestMessageCount + 1;
+      if (isMounted.current) setGuestMessageCount(newCount);
       await AsyncStorage.setItem(`guestMessageCount_${characterIdNum}`, newCount.toString());
       await AsyncStorage.setItem("totalGuestMessageCount", newCount.toString());
-       await loadGuestHistory(characterIdNum); // <-- Load guest history
+      await loadGuestHistory(characterIdNum); // <-- Load guest history
       setMessages(prev => [...prev, userMessage]);
       await saveGuestMessage(characterIdNum, userMessage); // <-- Save user message for guest
       console.log("Guest message saved:", userMessage);
     }
-    // getting user messages and subscription status before sending messages
-
-
-    // try {
-    //   setMessagesCount(prevCount => prevCount + 1); // Increment messages count
-    //   // Send message to DB (if logged in)
-    //   if (!isGuest && user) {
-    //     if (!userSubscribed && messagesCount >= 3) {
-    //        setIsAISpeaking(false); // Set AI speaking *after* user message is added
-    //       Alert.alert(
-    //         "Subscription Required",
-    //         "You need to subscribe to send more messages.",
-    //         [
-    //           {
-    //             text: "Cancel",
-    //             style: "cancel",
-    //           },
-    //           {
-    //             text: "Subscribe",
-    //             onPress: () => {
-    //               // Navigate to your subscription screen here
-    //               navigation.navigate('SubscriptionScreen');
-    //             },
-    //           },
-    //         ],
-    //         { cancelable: true }
-    //       );
-
-
-    //     } else {
-    //       const { data, error } = await supabase
-    //         .from('message_and_subscription')
-    //         .insert([
-    //           { user_id: user.id, message: textToSend },
-    //         ])
-    //         .select()
-    //          setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
-    //           setIsAISpeaking(true); // Set AI speaking *after* user message is added
-    //       console.log("first insert result:", data, error);
-    //       await sendMessageToDb(user.id, characterIdNum, textToSend, 'user', mediaToSend?.uri, mediaToSend?.type);
-    //     }
-    //   }
-
-
     try {
       setMessagesCount(prevCount => prevCount + 1); // Local state update
 
@@ -1953,7 +1887,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   }, [character?.avatar, characterIconName]); // Add characterIconName here
 
 
-  const guestLogin = async() =>{
+  const guestLogin = async () => {
     setGuest()
   }
 
@@ -2017,6 +1951,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
               handlePressOutSend={handlePressOutSend}
               onMicPress={handleMicPress}
               onAttachPress={handleAttachPress}
+              onCameraPress={handleCameraPress}
               stagedMedia={stagedMedia}
               clearStagedMedia={clearStagedMedia}
               isRecording={isRecording}
@@ -2070,6 +2005,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
               handlePressOutSend={handlePressOutSend}
               onMicPress={handleMicPress}
               onAttachPress={handleAttachPress}
+              onCameraPress={handleCameraPress}
               stagedMedia={stagedMedia}
               clearStagedMedia={clearStagedMedia}
               isRecording={isRecording}
@@ -2111,7 +2047,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
                   pressed && { opacity: 0.8 }
                 ]}
                 onPress={() => {
-                   guestLogin();
+                  guestLogin();
                   setShowLimitModal(false);
                 }}
               >
