@@ -713,13 +713,6 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
         // User message bubble
         <View style={styles.userMessageContainer}>
           <View style={styles.userMessageBubble}>
-            {item.image_url && (
-              <Image
-                source={{ uri: item.image_url }}
-                style={{ width: 200, height: 150, borderRadius: 10, marginBottom: 8 }}
-                resizeMode="cover"
-              />
-            )}
             <Text style={styles.userMessageText}>{item.text}</Text>
             <View style={styles.timestampReadStatusContainer}>
               <Text style={styles.userTimestamp}>{formattedTime}</Text>
