@@ -1146,7 +1146,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const { colors, isDarkMode } = useTheme();
   const navigation = useNavigation<NavigationProp>();
   const { user, isGuest, setGuest } = useAuth();
-  const { character: routeCharacter } = route.params;
+  const { character: routeCharacter, initialMessage } = route.params;
   const [character, setCharacter] = useState<Character | null>(routeCharacter);
   const [messages, setMessages] = useState<ListItem[]>([]);
   const [inputText, setInputText] = useState('');
@@ -1163,6 +1163,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const isMounted = useRef(true); // <-- Add isMounted ref
   const [messagesCount, setMessagesCount] = useState(0); // <-- Track total messages count
   const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
+  const [initialMessageRead, setInitialMessageRead] = useState(0);
 
   // let userSubscribed: boolean = false; 
   const flatListRef = useRef<FlatList>(null);
@@ -1380,12 +1381,38 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         }
       }
       fetchMessages();
+      const deleteMessages = async () => {
+        try{
+          const { error } = await supabase
+            .from('message_and_subscription')
+            .delete()
+            .eq('character_id', 0);
+
+        }catch(e){
+          console.error('error while deleting', e);
+
+        }
+
+      }
+      if (initialMessage && initialMessageRead === 0) {
+        deleteMessages();
+        console.log('initial message read: ', initialMessageRead);
+
+        setInputText(initialMessage);
+        if (initialMessage == inputText) {
+
+          handleSend();
+          setInitialMessageRead(prev => prev + 1);
+        }
+
+
+      }
       console.log("messagesCount:", messagesCount, "userSubscribed:", userSubscribed);
       console.log("userid", user!.id)
     }
 
 
-  }, [messagesCount, guestMessageCount]);
+  }, [messagesCount, guestMessageCount, inputText]);
 
   const fetchApiKeyFromSupabase = async (keyName: string): Promise<string | null> => {
     const { data, error } = await supabase
@@ -1854,10 +1881,10 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       }
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
-      if (recording) {
-        console.log("Unmounting: Stopping recording...");
-        stopRecording(false);
-      }
+      // if (recording) {
+      //   console.log("Unmounting: Stopping recording...");
+      //   stopRecording(false);
+      // }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [character, user, guestMessageCount]); // Rerun only if character or user changes
