@@ -713,6 +713,14 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
         // User message bubble
         <View style={styles.userMessageContainer}>
           <View style={styles.userMessageBubble}>
+            {/* code added for image */}
+            {item.image_url && (
+              <Image
+                source={{ uri: item.image_url }}
+                style={{ width: 200, height: 200, borderRadius: 10, marginBottom: 6 }}
+                resizeMode="cover"
+              />
+            )}
             <Text style={styles.userMessageText}>{item.text}</Text>
             <View style={styles.timestampReadStatusContainer}>
               <Text style={styles.userTimestamp}>{formattedTime}</Text>
@@ -727,7 +735,16 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
         </View>
       ) : (
         <View style={styles.aiMessageBubble}>
+          {/* // code added for showing images */}
+          {item.image_url && (
+            <Image
+              source={{ uri: item.image_url }}
+              style={{ width: 200, height: 200, borderRadius: 10, marginBottom: 5 }}
+              resizeMode="cover"
+            />
+          )}
           <Text style={styles.messageText}>{item.text}</Text>
+
           <Text style={styles.timestamp}>{formattedTime}</Text>
         </View>
       )}
@@ -1300,6 +1317,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
                 type: 'image',
                 mimeType: asset.mimeType || 'image/jpeg',
               });
+              console.log('stagedMedia', stagedMedia);
             }
           } else {
             console.warn("Image missing URI or base64");
@@ -1353,7 +1371,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             text: item.message,
             sender: item.sender, // ya 'ai' agar ai ka bhi message hai
             timestamp: Date.now(),
-            // image_url: stagedMedia,
+            image_url: item.image_url || null,
             type: 'message',
           }));
           console.log("formatted messages:", formattedMessages);
@@ -1382,13 +1400,13 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       }
       fetchMessages();
       const deleteMessages = async () => {
-        try{
+        try {
           const { error } = await supabase
             .from('message_and_subscription')
             .delete()
             .eq('character_id', 0);
 
-        }catch(e){
+        } catch (e) {
           console.error('error while deleting', e);
 
         }
@@ -1398,7 +1416,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         deleteMessages();
         console.log('initial message read: ', initialMessageRead);
 
-        setInputText(initialMessage);
+        setInputText(prev => prev + initialMessage);
         if (initialMessage == inputText) {
 
           handleSend();
@@ -1473,6 +1491,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       scrollToBottom();
     }
 
+
+
     // Increment guest count and save user message for guests
     if (isGuest) {
       //setGuestMessageCount(prevCount => prevCount + 1); // Increment guest message count
@@ -1539,14 +1559,56 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             return;
           }
         }
+        let publicUrl : string = '';
+        if (stagedMedia?.base64) {
+  const base64 = stagedMedia.base64;
+  const mimeType = stagedMedia.mimeType || 'image/jpeg';
+  const fileName = stagedMedia?.uri;
+
+  // Convert base64 to ArrayBuffer
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  // Upload using ArrayBuffer
+  const { data, error } = await supabase.storage
+    .from('images')
+    .upload(fileName, bytes.buffer, {
+      contentType: mimeType,
+      upsert: false,
+    });
+
+  if (error) {
+    console.error('Upload failed:', error);
+  } else {
+    console.log('Upload succeeded:', data);
+  }
+
+  const { data: urlData, error: urlError } = supabase.storage
+    .from('images')
+    .getPublicUrl(fileName);
+
+  if (urlError) {
+    console.error('URL error:', urlError);
+    return;
+  }
+
+   publicUrl = urlData.publicUrl;
+  console.log('Public URL:', publicUrl);
+}
+
 
         // Save message in Supabase
         const { data, error } = await supabase
           .from("message_and_subscription")
-          .insert([{ user_id: user.id, message: textToSend, character_id: characterIdNum, sender: 'user' }])
+          .insert([{ user_id: user.id, message: textToSend, character_id: characterIdNum, sender: 'user',image_url:publicUrl  }])
           .select();
+          console.log('url stored: ,', publicUrl);
 
-        // setMessages(prevMessages => addMessageWithSeparator(prevMessages, userMessage));
+      setMessages(prev => [...prev, userMessage]);
         setIsAISpeaking(true);
         console.log("insert result:", data, error);
         setMessagesCount(prevCount => prevCount + 1); // Increment messages count
@@ -1719,47 +1781,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   }, [character, inputText, stagedMedia, isAISpeaking, user, isGuest, guestMessageCount, scrollToBottom, setMessages, setInputText, setStagedMedia, setIsAISpeaking, setError, setShowLimitModal, setGuestMessageCount]); // <-- Removed updateGuestChatSessionInStorage, added saveGuestMessage if needed (it's called directly)
 
 
-  // --- Audio and Image Picker Functions ---
-  const playAudio = useCallback(async (uri: string) => {
-    console.log("Loading Sound from URI:", uri);
-    try {
-      // Unload previous sound if exists
-      if (sound) {
-        console.log("Unloading previous sound...");
-        await sound.unloadAsync();
-        if (isMounted.current) setSound(null);
-      }
 
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri });
-      if (isMounted.current) setSound(newSound);
-      console.log("Playing Sound");
-      await newSound.playAsync();
-
-      // Use the directly imported AVPlaybackStatus type
-      newSound.setOnPlayba
-        ;
-      ckStatusUpdate(async (status: AVPlaybackStatus) => {
-        if (!isMounted.current) return; // Check mount status in callback
-        if (status.isLoaded) {
-          if (status.didJustFinish) {
-            console.log("Sound finished playing");
-            await newSound.unloadAsync();
-            console.log("Sound unloaded");
-            if (isMounted.current) setSound(null);
-          }
-        } else {
-          if (status.error) {
-            console.error(`Playback Error: ${status.error}`);
-            await newSound.unloadAsync().catch(unloadError => console.error("Error unloading sound after playback error:", unloadError));
-            if (isMounted.current) setSound(null);
-          }
-        }
-      });
-    } catch (error) {
-      console.error("Failed to load or play sound", error);
-      if (isMounted.current) setSound(null); // Clear sound state on error
-    }
-  }, [sound]); // <-- Added dependency
 
   // Effect to load messages and subscribe
   const loadMessages = useCallback(async () => {
