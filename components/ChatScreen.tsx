@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { startOfToday } from "date-fns";
 import Purchases from 'react-native-purchases';
 import AudioRecorder from './AudioRecorder';
+import { sendToWhisper } from './TranscribeAudio';
 import {
   View,
   Text,
@@ -1263,6 +1264,16 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       const uri = await recorder.stopRecording();
       setIsRecording(false);
       console.log('Recording URI:', uri);
+       if (uri) {
+        setIsLoading(true);
+        const text = await sendToWhisper(uri);
+        setIsLoading(false);
+        if (text) {
+          console.log("Audio text" , text)
+        } else {
+          Alert.alert('Error', 'Failed to transcribe audio.');
+        }
+      }
     } else {
       await recorder.startRecording();
       setIsRecording(true);

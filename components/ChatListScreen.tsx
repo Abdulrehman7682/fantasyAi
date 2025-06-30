@@ -218,6 +218,13 @@ const ChatListItem = memo(({ item, index, onPress, colors, avatarSize, isDarkMod
       borderRadius: 16, // Match outer container rounding
       overflow: 'hidden', // Clip gradient to rounded corners
     },
+     underline: {
+    height: 3,
+    width: 130,
+    backgroundColor: '#007AFF',
+    marginTop: 4,
+    borderRadius: 2,
+  },
     iconContainer: {
       width: avatarSize,
       height: avatarSize,
@@ -348,6 +355,8 @@ const getStyles = (colors: any, isDarkMode: boolean, themeStyles: any) => StyleS
     paddingHorizontal: 16, // Match list padding
     paddingTop: 20, // Add top padding (adjust as needed)
     paddingBottom: 18, // Space below header
+    marginTop: 25,
+    marginLeft:5,
     // Optional: Add border if desired, like HomeScreen filters
     // borderBottomWidth: StyleSheet.hairlineWidth,
     // borderBottomColor: colors.border,
@@ -357,6 +366,8 @@ const getStyles = (colors: any, isDarkMode: boolean, themeStyles: any) => StyleS
     fontSize: 26, // Slightly smaller than HomeScreen greeting
     fontWeight: '700',
     color: colors.text,
+    // textAlign : "center",
+    // borderBottomWidth: 1,
     marginBottom: 4,
   },
   headerSubtitle: { // Style for the sub-header text
@@ -404,6 +415,13 @@ const getStyles = (colors: any, isDarkMode: boolean, themeStyles: any) => StyleS
     paddingHorizontal: 30,
     paddingBottom: 50, // Push content up slightly
     marginTop: -50, // Adjust to vertically center considering the header height approx
+  },
+   underline: {
+    height: 3,
+    width: 175,
+    backgroundColor: '#007AFF',
+    marginTop: 4,
+    borderRadius: 2,
   },
   emptyStateTitle: { // Style for "No Chats Yet"
     marginTop: 20,
@@ -665,7 +683,8 @@ export default function ChatListScreenWrapper({ navigation }: { navigation: Chat
     <SafeAreaView style={[themeStyles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Recent Chats</Text>
-        <Text style={styles.headerSubtitle}>Continue your conversations</Text>
+        <View style={styles.underline} />
+        {/* <Text style={styles.headerSubtitle}>Continue your conversations</Text> */}
       </View>
       {renderContent()}
     </SafeAreaView>

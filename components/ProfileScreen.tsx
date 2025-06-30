@@ -11,6 +11,7 @@ import {
   Alert,
   ActivityIndicator,
   Switch,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -25,15 +26,16 @@ import { ProfileTabScreenProps } from '../types/screens';
 import { Tables } from '../types/database';
 import { RootStackParamList } from '../types/navigation';
 
-// Types
+const { width } = Dimensions.get('window');
+
 type ProfileDataType = Partial<Tables<'profiles'>>;
 
-// Profile screen component with updated UI but preserving backend functionality
 export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: propNavigation }) => {
   const { user, signOut: contextSignOut, isGuest } = useAuth();
   const { colors, styles: themeStyles, isDarkMode, toggleTheme } = useTheme();
   const navigation = useNavigation<ProfileTabScreenProps['navigation']>();
   const parentNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
+
 
   // States
   const [isLoading, setIsLoading] = useState(true);
@@ -47,26 +49,33 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState('');
   const [newBio, setNewBio] = useState('');
-  const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
+  const [userSubscribed, setUserSubscribed] = useState(false);
 
-
-   const fetchUserSubscriptionStatus = async () => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('is_subscribed, user_id')
-        .eq('user_id', user!.id)
-      console.log("data of subscription status:", data);
-      if (data) {
-        setUserSubscribed(data[0]?.is_subscribed);
-      } else {
-        setUserSubscribed(false);
-      }
+  const fetchUserSubscriptionStatus = async () => {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('is_subscribed, user_id')
+      .eq('user_id', user!.id);
+    if (data) {
+      setUserSubscribed(data[0]?.is_subscribed);
+    } else {
+      setUserSubscribed(false);
     }
-  
-    useEffect(() => {
-      fetchUserSubscriptionStatus();
-    }, [user, userSubscribed]);
+  };
 
+  useEffect(() => {
+    fetchUserSubscriptionStatus();
+  }, [user, userSubscribed]);
+
+  function generateNameFromEmail(email: string): string {
+  if (!email) return 'User';
+  const namePart = email.split('@')[0];
+  return namePart
+    .replace(/[._]/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
   // Load profile data
   useEffect(() => {
     const loadProfileData = async () => {
@@ -87,10 +96,7 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
             .eq('id', user.id)
             .single();
 
-          if (error && error.code !== 'PGRST116') {
-            console.error('Supabase fetch error:', error);
-            throw error;
-          }
+          if (error && error.code !== 'PGRST116') throw error;
 
           if (data) {
             const name = data.name || '';
@@ -99,31 +105,23 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
             setNewDisplayName(name);
             setNewBio(bio);
           } else {
-            // Profile doesn't exist, attempt to create it
-            console.log(`Profile not found for user ${user.id}, attempting to create.`);
-            const initialEmail = user.email || '';
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert({ id: user.id, email: initialEmail, name: null, bio: null });
+           const initialEmail = user.email || '';
+const generatedName = generateNameFromEmail(initialEmail);
+console.log("generatedName", generatedName);
+const { error: insertError } = await supabase
+  .from('profiles')
+  .insert({ id: user.id, email: initialEmail, name: generatedName, bio: null });
 
-            if (insertError) {
-              console.error('Error inserting initial profile:', insertError);
-              Alert.alert('Error', 'Could not initialize your profile. Please try again later.');
-            } else {
-              console.log(`Initial profile created for user ${user.id}`);
-              setProfileData({ id: user.id, name: null, bio: null, email: initialEmail });
-              setNewDisplayName('');
-              setNewBio('');
-            }
+if (insertError) throw insertError;
+
+setProfileData({ id: user.id, name: "ali", bio: null, email: initialEmail });
+setNewDisplayName(generatedName);
+setNewBio('');
           }
-        } else {
-          console.warn("User is not guest but has no ID, cannot load profile.");
-          setProfileData({ name: 'Error', bio: 'Could not load profile', email: '' });
         }
       } catch (error) {
         console.error('Error loading profile:', error);
         Alert.alert('Error', 'Failed to load profile data. Please try again.');
-        setProfileData({ name: 'Error', bio: 'Load failed', email: '' });
       } finally {
         setIsLoading(false);
       }
@@ -151,9 +149,8 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
     setIsSaving(true);
     try {
       if (isGuest) {
-        const currentGuestProfile = profileData;
         await AsyncStorage.setItem('guestProfile', JSON.stringify({
-          ...currentGuestProfile,
+          ...profileData,
           name: newDisplayName,
         }));
       } else if (user?.id) {
@@ -162,16 +159,12 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
           .update({ name: newDisplayName, updated_at: new Date().toISOString() })
           .eq('id', user.id);
         if (error) throw error;
-      } else {
-        throw new Error('Cannot save: User not identified.');
       }
 
-      setProfileData((prevData: ProfileDataType) => ({ ...prevData, name: newDisplayName }));
+      setProfileData(prev => ({ ...prev, name: newDisplayName }));
       setIsEditingDisplayName(false);
-      Alert.alert('Success', 'Display name updated.');
     } catch (error) {
       Alert.alert('Error', `Failed to update display name: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      console.error('Update display name error:', error);
     } finally {
       setIsSaving(false);
     }
@@ -195,9 +188,8 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
     setIsSaving(true);
     try {
       if (isGuest) {
-        const currentGuestProfile = profileData;
         await AsyncStorage.setItem('guestProfile', JSON.stringify({
-          ...currentGuestProfile,
+          ...profileData,
           bio: newBio,
         }));
       } else if (user?.id) {
@@ -206,16 +198,12 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
           .update({ bio: newBio, updated_at: new Date().toISOString() })
           .eq('id', user.id);
         if (error) throw error;
-      } else {
-        throw new Error('Cannot save: User not identified.');
       }
 
-      setProfileData((prevData: ProfileDataType) => ({ ...prevData, bio: newBio }));
+      setProfileData(prev => ({ ...prev, bio: newBio }));
       setIsEditingBio(false);
-      Alert.alert('Success', 'Bio updated.');
     } catch (error) {
       Alert.alert('Error', `Failed to update bio: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      console.error('Update bio error:', error);
     } finally {
       setIsSaving(false);
     }
@@ -233,9 +221,8 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
   }, [contextSignOut]);
 
   const renderGoProButton = () => {
-    if (userSubscribed) {
-      return null; // Don't show Go Pro button if user is already subscribed
-    }else{
+    if (userSubscribed) return null;
+    
     return (
       <TouchableOpacity
         style={styles.goProContainer}
@@ -249,183 +236,200 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
         >
           <View style={styles.goProLeftContent}>
             <View style={styles.goProIconContainer}>
-              <Ionicons name="star" size={24} color="#FFFFFF" />
+              <Ionicons name="diamond" size={24} color="#FFFFFF" />
             </View>
             <View>
-              <Text style={styles.goProText}>Go Pro</Text>
-              <Text style={styles.goProSubText}>Unlock premium features</Text>
+              <Text style={styles.goProText}>Upgrade to Pro</Text>
+              <Text style={styles.goProSubText}>Unlock exclusive features</Text>
             </View>
           </View>
           <View style={styles.goProBadge}>
-            <Text style={styles.goPriceText}>50% OFF</Text>
+            <Text style={styles.goPriceText}>LIMITED OFFER</Text>
           </View>
         </LinearGradient>
       </TouchableOpacity>
     );
-    }
   };
 
-  // Display loading indicator
   if (isLoading) {
     return (
-      <SafeAreaView style={[themeStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView style={[themeStyles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
-  // Profile editing components
-  const renderDisplayNameEdit = () => {
-    if (isEditingDisplayName) {
-      return (
-        <View style={styles.editContainer}>
-          <TextInput
-            style={[styles.editInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
-            value={newDisplayName}
-            onChangeText={setNewDisplayName}
-            placeholder="Enter your name"
-            placeholderTextColor={colors.secondaryText}
-          />
-          <View style={styles.editButtonsContainer}>
-            <TouchableOpacity 
-              style={[styles.editButton, { backgroundColor: colors.primary }]} 
-              onPress={handleSaveDisplayName}
-              disabled={isSaving}
-            >
-              {isSaving ? 
-                <ActivityIndicator size="small" color="#FFFFFF" /> : 
-                <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-              }
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.editButton, { backgroundColor: colors.secondaryText }]} 
-              onPress={handleCancelDisplayNameEdit}
-              disabled={isSaving}
-            >
-              <Ionicons name="close" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      );
-    }
-    return null;
-  };
+  const renderDisplayNameEdit = () => (
+    <View style={styles.editContainer}>
+      <TextInput
+        style={[styles.editInput, { 
+          backgroundColor: colors.inputBackground, 
+          borderColor: colors.border, 
+          color: colors.text 
+        }]}
+        value={newDisplayName}
+        onChangeText={setNewDisplayName}
+        placeholder="Enter your name"
+        placeholderTextColor={colors.secondaryText}
+        autoFocus
+      />
+      <View style={styles.editButtonsContainer}>
+        <TouchableOpacity 
+          style={[styles.editButton, { backgroundColor: colors.primary }]} 
+          onPress={handleSaveDisplayName}
+          disabled={isSaving}
+        >
+          {isSaving ? 
+            <ActivityIndicator size="small" color="#FFFFFF" /> : 
+            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+          }
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.editButton, { backgroundColor: colors.secondaryText }]} 
+          onPress={handleCancelDisplayNameEdit}
+        >
+          <Ionicons name="close" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-  const renderBioEdit = () => {
-    if (isEditingBio) {
-      return (
-        <View style={styles.editContainer}>
-          <TextInput
-            style={[styles.editInput, styles.bioInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
-            value={newBio}
-            onChangeText={setNewBio}
-            placeholder="Tell us about yourself"
-            placeholderTextColor={colors.secondaryText}
-            multiline
-            numberOfLines={3}
-          />
-          <View style={styles.editButtonsContainer}>
-            <TouchableOpacity 
-              style={[styles.editButton, { backgroundColor: colors.primary }]} 
-              onPress={handleSaveBio}
-              disabled={isSaving}
-            >
-              {isSaving ? 
-                <ActivityIndicator size="small" color="#FFFFFF" /> : 
-                <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-              }
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.editButton, { backgroundColor: colors.secondaryText }]} 
-              onPress={handleCancelBioEdit}
-              disabled={isSaving}
-            >
-              <Ionicons name="close" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      );
-    }
-    return null;
-  };
+  const renderBioEdit = () => (
+    <View style={styles.editContainer}>
+      <TextInput
+        style={[styles.editInput, styles.bioInput, { 
+          backgroundColor: colors.inputBackground, 
+          borderColor: colors.border, 
+          color: colors.text 
+        }]}
+        value={newBio}
+        onChangeText={setNewBio}
+        placeholder="Tell us about yourself"
+        placeholderTextColor={colors.secondaryText}
+        multiline
+        numberOfLines={3}
+        autoFocus
+      />
+      <View style={styles.editButtonsContainer}>
+        <TouchableOpacity 
+          style={[styles.editButton, { backgroundColor: colors.primary }]} 
+          onPress={handleSaveBio}
+          disabled={isSaving}
+        >
+          {isSaving ? 
+            <ActivityIndicator size="small" color="#FFFFFF" /> : 
+            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+          }
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.editButton, { backgroundColor: colors.secondaryText }]} 
+          onPress={handleCancelBioEdit}
+        >
+          <Ionicons name="close" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-  // Create a section component with consistent styling
   const renderSection = (title: string, children: React.ReactNode) => (
     <View style={styles.section}>
-      <Text style={[themeStyles.subheadingText, styles.sectionTitle]}>{title}</Text>
-      <View style={styles.sectionContent}>
+      <Text style={[styles.sectionTitle, { color: colors.secondaryText }]}>{title}</Text>
+      <View style={[styles.sectionContent, { backgroundColor: colors.card }]}>
         {children}
       </View>
     </View>
   );
 
-  // Create a setting item component with consistent styling
-  const renderSettingItem = (icon: keyof typeof Ionicons.glyphMap, text: string, onPress?: () => void, rightElement?: React.ReactNode) => (
+  const renderSettingItem = (
+    icon: keyof typeof Ionicons.glyphMap, 
+    text: string, 
+    onPress?: () => void, 
+    rightElement?: React.ReactNode
+  ) => (
     <TouchableOpacity
-      style={[styles.settingItem, { borderBottomColor: colors.border }]}
+      style={[styles.settingItem, { 
+        borderBottomColor: colors.border,
+        backgroundColor: colors.card
+      }]}
       onPress={onPress}
       disabled={!onPress}
     >
       <View style={styles.settingLeft}>
-        <Ionicons name={icon} size={24} color={colors.icon} style={styles.settingIcon} />
+        <View style={[styles.settingIconContainer, { backgroundColor: colors.tileBg }]}>
+          <Ionicons name={icon} size={20} color={colors.icon} />
+        </View>
         <Text style={[styles.settingText, { color: colors.text }]}>{text}</Text>
       </View>
-      {rightElement || (onPress && <Ionicons name="chevron-forward" size={24} color={colors.secondaryText} />)}
+      {rightElement || (onPress && <Ionicons name="chevron-forward" size={20} color={colors.secondaryText} />)}
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={themeStyles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Profile Header Section */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Profile Header */}
         <View style={[styles.profileHeader, { backgroundColor: colors.card }]}>
-          <View style={[styles.avatarContainer, { backgroundColor: colors.tileBg }]}>
+          <View style={[styles.avatarContainer, { 
+            backgroundColor: colors.tileBg,
+            shadowColor: colors.shadow,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            elevation: 8
+          }]}>
             <Image
-              source={require('../assets/profile-placeholder.png')}
+              source={require('../assets/adaptive-icon.png')}
               style={[styles.avatar, { tintColor: colors.primary }]}
             />
           </View>
           
           <View style={styles.nameContainer}>
-            <Text style={[styles.userName, { color: colors.text }]}>{profileData.name || 'Set user name'}</Text>
-            {!isEditingDisplayName && (
-              <TouchableOpacity onPress={handleEditDisplayNameClick} style={styles.editIcon}>
-                <Ionicons name="pencil-outline" size={18} color={colors.secondaryText} />
-              </TouchableOpacity>
-            )}
+            {!isEditingDisplayName ? (
+              <>
+                <Text style={[styles.userName, { color: colors.text }]}>
+                  {profileData.name || 'Set user name'}
+                </Text>
+                <TouchableOpacity 
+                  onPress={handleEditDisplayNameClick} 
+                  style={styles.editIcon}
+                >
+                  <Ionicons name="create-outline" size={20} color={colors.secondaryText} />
+                </TouchableOpacity>
+              </>
+            ) : renderDisplayNameEdit()}
           </View>
-          {renderDisplayNameEdit()}
           
           <View style={styles.bioContainer}>
-            <Text style={[styles.userBio, { color: colors.secondaryText }]}>{profileData.bio || 'No bio set.'}</Text>
-            {!isEditingBio && (
-              <TouchableOpacity onPress={handleEditBioClick} style={styles.editIcon}>
-                <Ionicons name="pencil-outline" size={18} color={colors.secondaryText} />
-              </TouchableOpacity>
-            )}
+            {!isEditingBio ? (
+              <>
+                <Text style={[styles.userBio, { color: colors.secondaryText }]}>
+                  {profileData.bio || 'No bio set.'}
+                </Text>
+                <TouchableOpacity 
+                  onPress={handleEditBioClick} 
+                  style={styles.editIcon}
+                >
+                  <Ionicons name="create-outline" size={20} color={colors.secondaryText} />
+                </TouchableOpacity>
+              </>
+            ) : renderBioEdit()}
           </View>
-          {renderBioEdit()}
           
-          <Text style={[styles.userEmail, { color: colors.secondaryText }]}>{profileData.email || 'guest@example.com'}</Text>
+          <Text style={[styles.userEmail, { color: colors.secondaryText }]}>
+            {profileData.email || 'guest@example.com'}
+          </Text>
         </View>
 
         {/* Go Pro Button */}
         {renderGoProButton()}
 
-        {/* Help & Support Section */}
-        {renderSection('Help & Support', 
-          <>
-            {renderSettingItem('help-circle-outline', 'Help Center', () => parentNavigation?.navigate('HelpCenter'))}
-            {renderSettingItem('bug-outline', 'Report a Problem', () => parentNavigation?.navigate('ReportProblem'))}
-            {renderSettingItem('mail-outline', 'Contact Us', () => parentNavigation?.navigate('ContactUs'))}
-            {renderSettingItem('document-text-outline', 'Terms & Conditions', () => parentNavigation?.navigate('TermsAndConditions'))}
-            {renderSettingItem('shield-outline', 'Privacy Policy', () => parentNavigation?.navigate('PrivacyPolicy'))}
-          </>
-        )}
-
         {/* Preferences Section */}
-        {renderSection('Preferences',
-          renderSettingItem('moon-outline', 'Dark Mode', undefined, 
+        {renderSection('Preferences', 
+          renderSettingItem('contrast', 'Dark Mode', undefined, 
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
@@ -434,119 +438,165 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
             />
           )
         )}
+        
+        {/* Account Section */}
+        {renderSection('Account',
+          <>
+            {renderSettingItem('key', 'Change Password', () => parentNavigation?.navigate('ChangePassword'))}
+            {renderSettingItem('notifications', 'Notification Settings', () => parentNavigation?.navigate('NotificationSettings'))}
+          </>
+        )}
 
-        {/* Sign Out Button (Not for guests) */}
+        {/* Support Section */}
+        {renderSection('Support', 
+          <>
+            {renderSettingItem('help-circle', 'Help Center', () => parentNavigation?.navigate('HelpCenter'))}
+            {renderSettingItem('bug', 'Report a Problem', () => parentNavigation?.navigate('ReportProblem'))}
+            {renderSettingItem('mail', 'Contact Us', () => parentNavigation?.navigate('ContactUs'))}
+          </>
+        )}
+
+        {/* Legal Section */}
+        {renderSection('Legal',
+          <>
+            {renderSettingItem('document-text', 'Terms & Conditions', () => parentNavigation?.navigate('TermsAndConditions'))}
+            {renderSettingItem('shield-checkmark', 'Privacy Policy', () => parentNavigation?.navigate('PrivacyPolicy'))}
+          </>
+        )}
+
+        {/* Sign Out Button */}
         {!isGuest && (
           <TouchableOpacity
-            style={[styles.signOutButton, { backgroundColor: colors.tileBg }]}
+            style={[styles.signOutButton, { backgroundColor: colors.primary }]}
             onPress={handleSignOut}
           >
-            <Ionicons name="log-out-outline" size={22} color={colors.error} style={styles.signOutIcon} />
-            <Text style={[styles.signOutText, { color: colors.error }]}>Sign Out</Text>
+            <Ionicons name="log-out" size={22} color="black" />
+            <Text style={[styles.signOutText, { color: "black" }]}>Sign Out</Text>
           </TouchableOpacity>
         )}
 
-        {/* Extra spacing at bottom */}
-        <View style={{ height: 80 }} />
+        {/* <View style={styles.bottomSpacer} /> */}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 40,
+  },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 16,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
     margin: 16,
-    borderRadius: 16,
+    borderRadius: 24,
+    marginTop: 44,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   avatarContainer: {
-    height: 120,
-    width: 120,
-    borderRadius: 60,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    overflow: 'hidden',
+    marginBottom: 24,
   },
   avatar: {
-    height: 120,
-    width: 120,
-    borderRadius: 60,
+    width: 130,
+    height: 130,
+    borderRadius: 65,
   },
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   bioContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    marginBottom: 12,
     paddingHorizontal: 20,
+    justifyContent: 'center',
   },
   editIcon: {
     marginLeft: 8,
     padding: 4,
   },
   userName: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   userBio: {
     fontSize: 16,
     textAlign: 'center',
+    lineHeight: 24,
+    letterSpacing: 0.3,
   },
   userEmail: {
-    fontSize: 16,
-    marginTop: 4,
+    fontSize: 15,
+    opacity: 0.8,
+    letterSpacing: 0.3,
   },
   editContainer: {
     width: '100%',
-    marginVertical: 8,
-    paddingHorizontal: 20,
+    marginVertical: 12,
+    paddingHorizontal: 16,
   },
   editInput: {
     borderRadius: 12,
-    padding: 12,
+    padding: 16,
     fontSize: 16,
     borderWidth: 1,
+    marginBottom: 8,
   },
   bioInput: {
-    minHeight: 80,
+    minHeight: 100,
     textAlignVertical: 'top',
   },
   editButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 8,
+    marginTop: 4,
   },
   editButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: 12,
   },
   goProContainer: {
-    margin: 16,
+    marginHorizontal: 16,
+    marginBottom: 24,
     borderRadius: 16,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   goProContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
   },
   goProLeftContent: {
     flexDirection: 'row',
@@ -558,82 +608,98 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   goProText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
+    letterSpacing: 0.5,
   },
   goProSubText: {
     color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 14,
-    marginTop: 2,
+    marginTop: 4,
+    letterSpacing: 0.3,
   },
   goProBadge: {
-    backgroundColor: '#FF6B6B',
-    borderRadius: 12,
+    backgroundColor: '#FF9E3B',
+    borderRadius: 16,
     paddingVertical: 6,
-    paddingHorizontal: 10,
-    transform: [{ rotate: '4deg' }],
+    paddingHorizontal: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   goPriceText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '800',
+    letterSpacing: 0.5,
   },
   section: {
-    marginTop: 16,
+    marginBottom: 24,
     marginHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+    marginLeft: 8,
   },
   sectionContent: {
     borderRadius: 16,
     overflow: 'hidden',
-    marginTop: 8,
-  },
-  sectionTitle: {
-    marginBottom: 8,
-    paddingHorizontal: 8,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   settingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  settingIcon: {
+  settingIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
-    width: 24,
   },
   settingText: {
     fontSize: 16,
+    fontWeight: '500',
   },
   signOutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 16,
-    marginTop: 24,
-    paddingVertical: 14,
+    marginTop: 16,
+    paddingVertical: 16,
     borderRadius: 12,
-  },
-  signOutIcon: {
-    marginRight: 8,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   signOutText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  bottomSpacer: {
+    height: 40,
   },
 });
