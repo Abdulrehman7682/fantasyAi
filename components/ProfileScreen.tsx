@@ -38,10 +38,11 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
 
 
   // States
+  const [nameUser , setNameUser] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState<ProfileDataType>({
-    name: null,
+    name: nameUser ,
     bio: null,
     email: user?.email || '',
   });
@@ -108,13 +109,14 @@ export const ProfileScreen: React.FC<ProfileTabScreenProps> = ({ navigation: pro
            const initialEmail = user.email || '';
 const generatedName = generateNameFromEmail(initialEmail);
 console.log("generatedName", generatedName);
+setNameUser(generatedName);
 const { error: insertError } = await supabase
   .from('profiles')
   .insert({ id: user.id, email: initialEmail, name: generatedName, bio: null });
 
 if (insertError) throw insertError;
 
-setProfileData({ id: user.id, name: "ali", bio: null, email: initialEmail });
+setProfileData({ id: user.id, name: generatedName, bio: null, email: initialEmail });
 setNewDisplayName(generatedName);
 setNewBio('');
           }
@@ -132,9 +134,9 @@ setNewBio('');
 
   // Edit profile handlers
   const handleEditDisplayNameClick = useCallback(() => {
-    setNewDisplayName(profileData.name || '');
+    setNewDisplayName(nameUser || '');
     setIsEditingDisplayName(true);
-  }, [profileData.name]);
+  }, [nameUser]);
 
   const handleCancelDisplayNameEdit = useCallback(() => {
     setIsEditingDisplayName(false);
@@ -156,19 +158,19 @@ setNewBio('');
       } else if (user?.id) {
         const { error } = await supabase
           .from('profiles')
-          .update({ name: newDisplayName, updated_at: new Date().toISOString() })
+          .update({ name: nameUser, updated_at: new Date().toISOString() })
           .eq('id', user.id);
         if (error) throw error;
       }
 
-      setProfileData(prev => ({ ...prev, name: newDisplayName }));
+      setProfileData(prev => ({ ...prev, name: nameUser }));
       setIsEditingDisplayName(false);
     } catch (error) {
       Alert.alert('Error', `Failed to update display name: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }
-  }, [newDisplayName, profileData, isGuest, user?.id]);
+  }, [nameUser, profileData, isGuest, user?.id]);
 
   const handleEditBioClick = useCallback(() => {
     setNewBio(profileData.bio || '');
@@ -388,19 +390,19 @@ setNewBio('');
           </View>
           
           <View style={styles.nameContainer}>
-            {!isEditingDisplayName ? (
-              <>
+            {/* {!isEditingDisplayName ? ( */}
+              {/* <> */}
                 <Text style={[styles.userName, { color: colors.text }]}>
-                  {profileData.name || 'Set user name'}
+                  {nameUser || 'Set user name'}
                 </Text>
-                <TouchableOpacity 
+                {/* <TouchableOpacity 
                   onPress={handleEditDisplayNameClick} 
                   style={styles.editIcon}
                 >
                   <Ionicons name="create-outline" size={20} color={colors.secondaryText} />
                 </TouchableOpacity>
               </>
-            ) : renderDisplayNameEdit()}
+            ) : renderDisplayNameEdit()} */}
           </View>
           
           <View style={styles.bioContainer}>
@@ -530,12 +532,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     justifyContent: 'center',
   },
+  
   editIcon: {
     marginLeft: 8,
+    marginBottom:20,
     padding: 4,
   },
   userName: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.5,

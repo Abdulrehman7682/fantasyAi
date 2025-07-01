@@ -666,6 +666,14 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
       lineHeight: 22,
       color: colors.text,
     },
+    messageImage: {
+  width: 220,
+  height: 220,
+  borderRadius: 12,
+  marginBottom: 8,
+  backgroundColor: '#ccc', // placeholder background to avoid flicker
+},
+
     timestamp: {
       fontSize: 11,
       color: colors.secondaryText,
@@ -690,66 +698,64 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
   );
 
   return (
-    <Animated.View
-      style={[
-        styles.messageRow,
-        isUser ? styles.userMessageRow : styles.aiMessageRow,
-        {
-          opacity: fadeAnim,
-          transform: [
-            { translateY: slideAnim },
-            { scale: scaleAnim }
-          ]
-        }
-      ]}
-    >
-      {!isUser && (
-        // Use the container for both icon and avatar
-        <View style={styles.aiIconAvatarContainer}>
-          {aiRepresentation}
-        </View>
-      )}
+   <Animated.View
+  style={[
+    styles.messageRow,
+    isUser ? styles.userMessageRow : styles.aiMessageRow,
+    {
+      opacity: fadeAnim,
+      transform: [
+        { translateY: slideAnim },
+        { scale: scaleAnim },
+      ],
+    },
+  ]}
+>
+  {!isUser && (
+    <View style={styles.aiIconAvatarContainer}>
+      {aiRepresentation}
+    </View>
+  )}
 
-      {isUser ? (
-        // User message bubble
-        <View style={styles.userMessageContainer}>
-          <View style={styles.userMessageBubble}>
-            {/* code added for image */}
-            {item.image_url && (
-              <Image
-                source={{ uri: item.image_url }}
-                style={{ width: 200, height: 200, borderRadius: 10, marginBottom: 6 }}
-                resizeMode="cover"
-              />
-            )}
-            <Text style={styles.userMessageText}>{item.text}</Text>
-            <View style={styles.timestampReadStatusContainer}>
-              <Text style={styles.userTimestamp}>{formattedTime}</Text>
+  <View style={isUser ? styles.userMessageContainer : styles.aiMessageBubble}>
+    <View style={isUser ? styles.userMessageBubble : null}>
+      {(item.image_url || item.text) && (
+        <>
+          {item.image_url ? (
+            <Image
+              source={{ uri: item.image_url }}
+              style={styles.messageImage}
+              resizeMode="cover"
+              onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
+            />
+          ) : null}
+
+          {item.text ? (
+            <Text style={isUser ? styles.userMessageText : styles.messageText}>
+              {item.text}
+            </Text>
+          ) : null}
+
+          <View style={styles.timestampReadStatusContainer}>
+            <Text style={isUser ? styles.userTimestamp : styles.timestamp}>
+              {formattedTime}
+            </Text>
+
+            {isUser && (
               <Ionicons
                 name="checkmark-done"
                 size={15}
                 color={isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.8)'}
                 style={styles.readStatusIcon}
               />
-            </View>
+            )}
           </View>
-        </View>
-      ) : (
-        <View style={styles.aiMessageBubble}>
-          {/* // code added for showing images */}
-          {item.image_url && (
-            <Image
-              source={{ uri: item.image_url }}
-              style={{ width: 200, height: 200, borderRadius: 10, marginBottom: 5 }}
-              resizeMode="cover"
-            />
-          )}
-          <Text style={styles.messageText}>{item.text}</Text>
-
-          <Text style={styles.timestamp}>{formattedTime}</Text>
-        </View>
+        </>
       )}
-    </Animated.View>
+    </View>
+  </View>
+</Animated.View>
+
   );
 });
 
