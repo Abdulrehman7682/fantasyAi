@@ -673,6 +673,10 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
   marginBottom: 8,
   backgroundColor: '#ccc', // placeholder background to avoid flicker
 },
+messageContentWrapper: {
+  flexDirection: 'column',
+  gap: 6, // or use marginBottom on image for spacing
+},
 
     timestamp: {
       fontSize: 11,
@@ -698,7 +702,7 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
   );
 
   return (
-   <Animated.View
+  <Animated.View
   style={[
     styles.messageRow,
     isUser ? styles.userMessageRow : styles.aiMessageRow,
@@ -720,27 +724,29 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
   <View style={isUser ? styles.userMessageContainer : styles.aiMessageBubble}>
     <View style={isUser ? styles.userMessageBubble : null}>
       {(item.image_url || item.text) && (
-        <>
-          {item.image_url ? (
+        <View style={styles.messageContentWrapper}>
+          {/* Image */}
+          {item.image_url && (
             <Image
               source={{ uri: item.image_url }}
               style={styles.messageImage}
               resizeMode="cover"
               onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
             />
-          ) : null}
+          )}
 
-          {item.text ? (
+          {/* Text */}
+          {item.text && (
             <Text style={isUser ? styles.userMessageText : styles.messageText}>
               {item.text}
             </Text>
-          ) : null}
+          )}
 
+          {/* Timestamp and Read Status */}
           <View style={styles.timestampReadStatusContainer}>
             <Text style={isUser ? styles.userTimestamp : styles.timestamp}>
               {formattedTime}
             </Text>
-
             {isUser && (
               <Ionicons
                 name="checkmark-done"
@@ -750,11 +756,12 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
               />
             )}
           </View>
-        </>
+        </View>
       )}
     </View>
   </View>
 </Animated.View>
+
 
   );
 });
@@ -1376,7 +1383,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         try {
           const { data, error } = await supabase
             .from('message_and_subscription')
-            .select('message, user_id , sender')
+            .select('message, user_id , sender, image_url')
             .eq('user_id', user!.id)
             .eq('character_id', characterIdNum)
             .order('created_at', { ascending: true });
