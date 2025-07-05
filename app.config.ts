@@ -36,7 +36,7 @@ export default {
   ],
   android: {
     package: "com.fantasyai.app",
-    versionCode: 16,
+    versionCode: 18,
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#FFFFFF"

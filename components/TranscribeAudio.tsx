@@ -1,22 +1,7 @@
-import { supabase } from "utils/supabase";
+
 
 export const sendToWhisper = async (uri: string): Promise<string | null> => {
-    console.log("uri", uri);
-  // 🔐 Step 1: Fetch OpenRouter API key from Supabase
-  const { data, error } = await supabase
-    .from('ai_key')
-    .select('*')
-    .eq('key_name', 'openrouter')
-    .single();
-
-  if (error || !data?.api_key) {
-    console.error("Error fetching OpenRouter API key:", error);
-    return null;
-  }
-
-  const apiKey = data.api_key;
-  console.log("Fetched OpenRouter API key from Supabase" , apiKey);
-
+   
   // 🎤 Step 2: Prepare audio form data
   const formData = new FormData();
   formData.append('file', {
@@ -24,22 +9,22 @@ export const sendToWhisper = async (uri: string): Promise<string | null> => {
     name: 'audio.m4a',
     type: 'audio/m4a',
   } as any);
-  formData.append('model', 'whisper');
+  // formData.append('model', 'slam-1');
 
   // 📡 Step 3: Send to OpenRouter Whisper endpoint
   try {
-    console.log("Sending file to OpenRouter...");
-    const response = await fetch('https://openrouter.ai/api/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'application/json',
-      },
-      body: formData,
-    });
+   const response = await fetch('https://api.assemblyai.com/v2/transcript', {
+        method: 'POST',
+        headers: {
+          authorization: "4ee421621622471d9f755e78b6c2c556",
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ audio_url: uri }),
+      });
 
-    const result = await response.json();
+    const result = formData;
     console.log('Transcription result:', result);
+    console.log('Transcription :', response);
 
     return result.text ?? null;
   } catch (err) {

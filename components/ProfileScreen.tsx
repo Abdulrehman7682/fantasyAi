@@ -122,8 +122,8 @@ setNewBio('');
           }
         }
       } catch (error) {
-        console.error('Error loading profile:', error);
-        Alert.alert('Error', 'Failed to load profile data. Please try again.');
+        // console.error('Error loading profile:', error);
+        // Alert.alert('Error', 'Failed to load profile data. Please try again.');
       } finally {
         setIsLoading(false);
       }

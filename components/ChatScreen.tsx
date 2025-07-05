@@ -51,7 +51,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { OPENROUTER_API_KEY, AI_MODELS, CHARACTER_PROMPTS } from '../utils/aiConfig';
 
 
-const recorder = new AudioRecorder();
+// const recorder = new AudioRecorder();
 // --- Types and Interfaces ---
 
 type GuestChatSessionData = {
@@ -1195,6 +1195,9 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [messagesCount, setMessagesCount] = useState(0); // <-- Track total messages count
   const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
   const [initialMessageRead, setInitialMessageRead] = useState(0);
+    const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [transcript, setTranscript] = useState('');
+  const recordingRef = useRef<Audio.Recording | null>(null);
 
   // let userSubscribed: boolean = false; 
   const flatListRef = useRef<FlatList>(null);
@@ -1272,26 +1275,131 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   /**
    * Handle pressing the microphone icon
    */
-  const handleMicPress = useCallback(async () => {
-    if (recorder.getIsRecording()) {
-      const uri = await recorder.stopRecording();
+  const getAssemblyApiKey = async (): Promise<string | null> => {
+  const { data, error } = await supabase
+   .from('ai_key')
+      .select('*')
+      .eq('key_name', "assemblyAi")
+      .single();
+
+  if (error) {
+    console.error('❌ Failed to load API key from Supabase:', error.message);
+    return null;
+  }
+
+ return data?.api_key || null;
+};
+  // const ASSEMBLYAI_API_KEY = '4ee421621622471d9f755e78b6c2c556'; // 🔑 Replace with your real key
+  // const ASSEMBLYAI_API_KEY = getAssemblyApiKey(); // 🔑 Replace with your real key
+  //   useEffect(() => {
+  //   return () => {
+  //     // CLEANUP ON UNMOUNT
+  //     if (recording) {
+  //       recording.stopAndUnloadAsync().catch(() => {});
+  //       recording.setOnRecordingStatusUpdate(null);
+  //     }
+  //   };
+  // }, []);
+
+ 
+ const handleMicPress = useCallback(async () => {
+ const ASSEMBLYAI_API_KEY = await getAssemblyApiKey()
+ console.log("key type" , ASSEMBLYAI_API_KEY)
+  try {
+    if (isRecording && recordingRef.current) {
+      // STOP recording
       setIsRecording(false);
-      console.log('Recording URI:', uri);
-       if (uri) {
-        setIsLoading(true);
-        const text = await sendToWhisper(uri);
-        setIsLoading(false);
-        if (text) {
-          console.log("Audio text" , text)
-        } else {
-          Alert.alert('Error', 'Failed to transcribe audio.');
+      setIsLoading(true);
+
+      try {
+        await recordingRef.current.stopAndUnloadAsync();
+      } catch (e) {
+        console.log('Stop failed (possibly already stopped):', e);
+      }
+
+      const uri = recordingRef.current.getURI();
+      recordingRef.current.setOnRecordingStatusUpdate(null);
+      recordingRef.current = null;
+      setRecording(null);
+
+      if (uri) {
+        const blob = await (await fetch(uri)).blob();
+
+        const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
+          method: 'POST',
+          headers: { authorization: ASSEMBLYAI_API_KEY },
+          body: blob,
+        });
+
+        const { upload_url } = await uploadRes.json();
+
+        const transcriptRes = await fetch('https://api.assemblyai.com/v2/transcript', {
+          method: 'POST',
+          headers: {
+            authorization: ASSEMBLYAI_API_KEY,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({ audio_url: upload_url }),
+        });
+
+        const { id } = await transcriptRes.json();
+
+        let done = false;
+        while (!done) {
+          await new Promise(res => setTimeout(res, 3000));
+          const polling = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
+            headers: { authorization: ASSEMBLYAI_API_KEY },
+          });
+
+          const data = await polling.json();
+
+          if (data.status === 'completed') {
+            done = true;
+            setInputText(data.text);
+          } else if (data.status === 'error') {
+            throw new Error('Transcription failed');
+          }
         }
       }
+      setIsLoading(false);
     } else {
-      await recorder.startRecording();
+      // START recording
+      if (recordingRef.current) {
+        try {
+          await recordingRef.current.stopAndUnloadAsync();
+        } catch (e) {}
+        recordingRef.current.setOnRecordingStatusUpdate(null);
+        recordingRef.current = null;
+        setRecording(null);
+      }
+
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('Microphone permission required');
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      recordingRef.current = recording;
+      setRecording(recording);
       setIsRecording(true);
     }
-  }, [setIsRecording]); // <-- Added dependencies
+  } catch (err) {
+    console.error('Start recording error:', err);
+    Alert.alert('⚠️ Mic Error', 'Only one recording object allowed. Restart Expo Go if this repeats.');
+  }
+}, [isRecording, setInputText]);
+
+
+
 
 
 
