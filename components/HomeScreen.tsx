@@ -54,12 +54,25 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
 
-  const filters = ['Funny', 'Motivational', 'Romantic', 'Sad', 'Other'];
+  const filters = [
+  '📧   E-Mail',
+  '💼   Business & Marketing',
+  '📚   Education',
+  '🎨   Art',
+  '✈️   Travel',
+  '💑   Relationship',
+  '🗣️   Social',
+  '🥗   Health & Nutrition',
+  '🎁   Greetings',
+];
 
   const [selectedFilter, setSelectedFilter] = useState('All');
   let characterToPass: ChatCharacter;
 
   useEffect(() => {
+    if (selectedFilter === 'All') {
+      setSelectedFilter('📧   E-Mail'); // Default to first filter if 'All' is selected
+    }
     console.log('%c HomeScreen mounted', 'background: #000; color: #bada55; font-size: 12px;');
     console.log('%c User info:', 'color: #3498db; font-weight: bold;', {
       user: user ? 'Logged In' : 'Not Logged In',
@@ -365,7 +378,8 @@ const HomeScreen = () => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 10,
+      paddingVertical: 12,
+      marginVertical: 6,
       paddingHorizontal: 16,
       borderBottomWidth: 1,
       borderTopWidth: 1,
@@ -581,7 +595,7 @@ const HomeScreen = () => {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.listItem}
-                  onPress={() => handleMessagePress(item.title, item.category)}
+                  onPress={() => handleMessagePress(item.prompt ?? item.title, item.category)}
                 >
                   <Text style={styles.listText}>{item.title}</Text>
                   <ChevronRight size={20} style={styles.listIcon} />

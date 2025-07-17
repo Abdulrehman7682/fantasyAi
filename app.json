@@ -34,7 +34,7 @@
         "com.android.vending.BILLING",
         "RECORD_AUDIO"
       ],
-       "versionCode": 18,
+       "versionCode": 19,
       "package": "com.fantasyai.app",
       "intentFilters": [
         {

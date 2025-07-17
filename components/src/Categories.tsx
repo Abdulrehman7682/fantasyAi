@@ -328,23 +328,95 @@ export const categories: Category[] = [
 ];
 
 export const prompts = [
-  { title: "Tell me a joke", category: "Funny" },
-  { title: "Why did the chicken cross the road?", category: "Funny" },
-  { title: "Funniest thing that happened today?", category: "Funny" },
-  
-  { title: "Give me daily motivation", category: "Motivational" },
-  { title: "How to stay consistent?", category: "Motivational" },
-  { title: "Quote to start my day", category: "Motivational" },
+  // E-Mail
+  { title: "📧   Write an email to promote the sale", category: "📧   E-Mail", prompt: 'Create an email using the given information.\n\n Product: Skincare Set\nCustomer Persona: Proffessional Women, ages 35\nUnique Selling Point: All-natural\nDesired Action: Purchase Skincare Set'},
+  { title: "📰   Newsletter template", category: "📧   E-Mail", prompt: 'Write a newsletter for crypto market trend. The newsletter is in e-mail format' },
+  { title: "😡   Mail response for any angry clients", category: "📧   E-Mail", prompt: 'You need to write a posting, persuasive and polite response mail to the angry customer e-mail.\nMail: I have used your product and I did not like it at all'},
+  { title: "✉️   Email subject lines for high open rates", category: "📧   E-Mail", prompt: 'Create email subject lines for high open rates. Make catchy creative and clickable subject line suggestion for the Email' },
+  { title: "📣   Mass marketing email", category: "📧   E-Mail", prompt: 'I have a personal care company and I going to send a mass marketing email for the face mask product. This email should be persuasive, informative, creative.' },
+  { title: "🎨   Text formalize prettifier and fixer", category: "📧   E-Mail", prompt:'Act as a text formalizer Prettifier and fixer. My first text is \'Hi I am free tommorow from 9 to 4, can we meet at the office and talk about the project? i have questions\'' },
+  { title: "🤖   Email responder (friendly / professional)", category: "📧   E-Mail", prompt:'Considering the text I gave as an example, reply to an email sent to me separately in a friend text, a professinal text, and a welcoming text.' },
 
-  { title: "Write a romantic poem", category: "Romantic" },
-  { title: "Best romantic gift ideas?", category: "Romantic" },
-  { title: "Cute message for my partner", category: "Romantic" },
+  // Business & Marketing
+  { title: "📩   E-Mail generator", category: "💼   Business & Marketing", prompt:'Sell me this pen! Think creatively, concisely, smartly, shortly. ' },
+  { title: "📱   Social Media manager", category: "💼   Business & Marketing", prompt:'\"I need help managing the presence of an organization in Twitter in order to increase brand awareness\"' },
+  { title: "💡   Business idea", category: "💼   Business & Marketing", prompt:'Can you suggest 3 business ideas that I can start without investment? Give a different answer every time I ask.' },
+  { title: "📈   Digital marketing strategy", category: "💼   Business & Marketing", prompt:'I want to sell shoes, how are digital marketing srategies determined and how are these strategies applied? Can you briefly explain in 1 Paragraph?' },
+  { title: "🔍   SEO generator", category: "💼   Business & Marketing", prompt: 'Can you write me a short SEO friendly blog paragraph about the lifestyle of lions?' },
+  { title: "📊   Slide presentation", category: "💼   Business & Marketing", prompt: 'By asking questions about the theme, where will it be used, you will prepare a Professional Slide Presentation with this information.' },
+  { title: "📝   Prepare a professional business plan", category: "💼   Business & Marketing", prompt: 'Ask about my product and target country. You will create introduction, Phases for implementation, Differentiation from Copetitors, CONSs and PROs of the Business, Risks, Opportunities.' },
+  { title: "📦   All-in-one marketing", category: "💼   Business & Marketing", prompt: 'Ask about my product. You will create descritption and pain points of the Targe Audience, Marketing Copy, Script for Social Media Video ad, List of Keywords for SEO.' },
+  { title: "🧠   Social media caption generator", category: "💼   Business & Marketing", prompt:'Act as a Social Media Caption inspiration Generator. According to the information I have given, you will offer me 10 captions.\n\nConcept: Fitness and wellness Tupe and Platform: instagram Post\nCall to Action: Profile Click Emoji: Yes' },
+  { title: "💰   Make $100 a day", category: "💼   Business & Marketing", prompt:'You are asuccessful entrepreneur. Tell me a strategy to make $100 a day with unique and easy ways. Explain how to scale after you tell me the strategy.' },
+  { title: "👨‍💼   CEO (Virtual CEO Consultant)", category: "💼   Business & Marketing", prompt:'Act as CEO consultant. I will present you with business scenarios & challenges. Your role is to provide strategic advice, decisions,a nd solutions that a typical CEO would make. Your answers should reflect high-level executive thinking, considering the long-term impact, stakeholders, and overall company goals. You can start by asking me the topic.' },
+  { title: "💼   Business Tax Advisor", category: "💼   Business & Marketing", prompt:'You are a successful tax advisor. Tell me how to manage my taxes as an entrepreneur. Ask me questions one at a time to clarify important points that will affect the tax management. Go step by step and simplify your explanation for me to understand easily.' },
 
-  { title: "Tell me a sad story", category: "Sad" },
-  { title: "Make me emotional", category: "Sad" },
-  { title: "Heartbreaking moment in history", category: "Sad" },
+  // Education
+  { title: "🔬   Science chat", category: "📚   Education", prompt: 'Act like a professor. Every time I write you fyi, you will give me new information. You will present interesting information from basic sciences such as history and physics.' },
+  { title: "👨‍🏫   English Teacher", category: "📚   Education", prompt: 'Act as an English teacher. Lessons should focus on pronunciation of English words, phrases and sentences. Briefly summarize the topic in maximum of two paragraphs.\nTopic: Adjective.' },
+  { title: "🌐   Translator", category: "📚   Education", prompt: 'I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in English. My first sentence is "Hola"' },
+  { title: "➗   Math Teacher", category: "📚   Education", prompt: 'I want you to act as a math teacher. I will provide some mathematical equations or concepts, and it will be your job to calculate them. My first request is "346 x 569"' },
+  { title: "📄   Create a short essay on any topic", category: "📚   Education", prompt: 'Create a short essay on Glycemic Index.  It must be introduction, development, conclusion, shorter than 400 characters.' },
+  { title: "📚   Citation Generator for any style", category: "📚   Education", prompt: 'You will write APA style citation.\nAuthor(s): Joe Schank\nTitle of entry: Where is AI?\nTitle of encyclopedia: AI In The World\nPublisher: AI Society\nPublication date: 01/22/2007' },
+  { title: "🎓   Course generator on any topic", category: "📚   Education", prompt: 'You will write APA style citation.\nAuthor(s): Joe Schank\nTitle of entry: Where is AI?\nTitle of encyclopedia: AI In The World\nPublisher: AI Society\nPublication date: 01/22/2007' },
 
-  { title: "Give me random facts", category: "Other" },
-  { title: "Surprise me with something cool", category: "Other" },
-  { title: "What’s something most people don’t know?", category: "Other" },
+  // Art
+  { title: "📖   Write J.K.Rowling-style short story", category: "🎨   Art", prompt: 'Write J. K. Rowling-style short story. Let it be a single paragraph and the story length should not exceed 400 characters.' },
+  { title: "🎵   Write Travis Scott-style song lyrics", category: "🎨   Art", prompt: 'Write Travis Scott-style song lyrics' },
+  { title: "🎶   Create a playlist similar to your favorite song", category: "🎨   Art", prompt: 'Act as a song recommender. I will provide you with a song and you will create a playlist of 10 songs that are similar to the given song. My first song is "Eminem - Business".' },
+  { title: "🧙   Storyteller", category: "🎨   Art", prompt: 'What would happen if a non-technological person found himself in the world of high technology?' },
+  { title: "📘   Book recommendation", category: "🎨   Art", prompt: 'Recommend 3 book story for me' },
+  { title: "📝   Poem generator", category: "🎨   Art", prompt: 'Act as a poet. You will create poems that evoke emotions and have the power to stir people’s soul. Make sure your words convey the emotion you are trying to express in beautiful but meaningful ways. You can also come up with short verses that are still powerful enough to leave an imprint in readers’ minds. My first request is:\n"I need a poem about love."' },
+  { title: "🎬   Movie and series critic", category: "🎨   Art", prompt: 'Act as Movie and Series critic. You will develop an engaging and creative review. You can cover topics like plot, themes and tone, acting and characters, direction, score, cinematography, production design, special effects, editing, pace, dialog. The most important aspect though is to emphasize how the movie has made you feel. You can also be critical about the movie. Please avoid spoilers.Movie: Everything Everywhere all at once' },
+  { title: "🎤   Song generate according to your mood", category: "🎨   Art", prompt: 'You will suggest me 5 songs in accordance with the information I have given,\n\nMood: Millionaire\nGenre: Hip-Hop' },
+  { title: "📺   Write a south park episode", category: "🎨   Art", prompt: 'Act like a screenwriter. I expect you to write a South Park episode using the information I gave you.\nGuest Cast: Elon Musk\nEpisode Subject: End of the world' },
+
+  // Travel
+  { title: "🧳   Vacation planner", category: "✈️   Travel" },
+  { title: "🍱   Local foods", category: "✈️   Travel" },
+  { title: "🗓️   Best time to visit", category: "✈️   Travel" },
+  { title: "🏄   Activities", category: "✈️   Travel" },
+  { title: "💵   Budgeting tips", category: "✈️   Travel" },
+  { title: "📅   Prepare Itinerary", category: "✈️   Travel" },
+  { title: "🛂   Cultural Legal Advisor For Safe Travels", category: "✈️   Travel" },
+  { title: "🕰️   Time-Travel Machine", category: "✈️   Travel" },
+
+  // Relationship
+  { title: "💑   Dating Tips", category: "💑   Relationship" },
+  { title: "🧠   Relationship Therapist", category: "💑   Relationship" },
+  { title: "❤️   Sex Therapist", category: "💑   Relationship" },
+  { title: "👗   Outfit Advisor for Upcoming Date", category: "💑   Relationship" },
+  { title: "🎮   Game Generator for Couples", category: "💑   Relationship" },
+  { title: "📊   Calculation of Relationship Score", category: "💑   Relationship" },
+  { title: "💬   Deep Question to Ask to Partner", category: "💑   Relationship" },
+  { title: "👫   Is My Relationship Healthy Or Not", category: "💑   Relationship" },
+
+  // Social
+  { title: "🎁   Gift Advice", category: "🗣️   Social" },
+  { title: "🎉   Event suggestion", category: "🗣️   Social" },
+  { title: "💘   Win someone's heart on a dating app", category: "🗣️   Social" },
+  { title: "🧥   Personal stylist", category: "🗣️   Social" },
+  { title: "👕   Outfit idea for event", category: "🗣️   Social" },
+  { title: "💬   New topic to open a conversation", category: "🗣️   Social" },
+  { title: "🎂   Birthday Message", category: "🗣️   Social" },
+
+  // Health & Nutrition
+  { title: "🧘   Life Coach", category: "🥗   Health & Nutrition" },
+  { title: "🥗   Dietitian", category: "🥗   Health & Nutrition" },
+  { title: "🏋️   Abs-Boosting workouts program", category: "🥗   Health & Nutrition" },
+  { title: "🧘‍♀️   Yoga Poses", category: "🥗   Health & Nutrition" },
+  { title: "🥙   Vegan Lunch", category: "🥗   Health & Nutrition" },
+  { title: "🍽️   How many calories should I eat in a day?", category: "🥗   Health & Nutrition" },
+  { title: "🎥   Youtube Channel about Health, Nutrition and Sports", category: "🥗   Health & Nutrition" },
+  { title: "📅   Training Plan Generator", category: "🥗   Health & Nutrition" },
+
+  // Greetings
+  { title: "🎄   Merry Christmas", category: "🎁   Greetings" },
+  { title: "👩‍👧   Happy Mother's Day", category: "🎁   Greetings" },
+  { title: "🎉   Happy Birthday", category: "🎁   Greetings" },
+  { title: "💘   Happy Valentine's Day", category: "🎁   Greetings" },
+  { title: "💍   Happy Anniversary", category: "🎁   Greetings" },
+  { title: "🦃   Happy Thanksgiving", category: "🎁   Greetings" },
+  { title: "🎃   Happy Halloween", category: "🎁   Greetings" },
+  { title: "🌍   Greetings in 101 languages", category: "🎁   Greetings" },
 ];
