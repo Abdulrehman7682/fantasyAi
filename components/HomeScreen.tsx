@@ -289,7 +289,12 @@ const HomeScreen = () => {
       marginBottom: 10,
     },
     filterButtonActive: {
-      backgroundColor: colors.cardBg,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      backgroundColor: colors.primary,
+      borderRadius: 20,
+      marginRight: 8,
+      marginBottom: 10,
     },
     filterButtonText2: {
       color: colors.text,
@@ -572,8 +577,8 @@ const HomeScreen = () => {
                   key={filter}
                   onPress={() => setSelectedFilter(filter)}
                   style={[
-                    styles.filterButton2,
-                    selectedFilter === filter && styles.filterButtonActive,
+                    
+                    selectedFilter === filter ? styles.filterButtonActive:styles.filterButton2,
                   ]}
                 >
                   <Text
