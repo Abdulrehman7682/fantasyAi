@@ -280,29 +280,34 @@ const HomeScreen = () => {
       marginRight: 10,
       backgroundColor: colors.cardBg,
     },
-    filterButton2: {
-      paddingVertical: 6,
-      paddingHorizontal: 12,
+     filterButton2: {
+      paddingVertical: 5,
+      paddingHorizontal: 10,
       backgroundColor: colors.cardBg,
       borderRadius: 20,
       marginRight: 8,
       marginBottom: 10,
     },
     filterButtonActive: {
-      backgroundColor: colors.cardBg,
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      backgroundColor: colors.primary,
+      borderRadius: 20,
+      marginRight: 8,
+      marginBottom: 10,
     },
     filterButtonText2: {
       color: colors.text,
       fontSize: 13,
       fontWeight: '500',
     },
-    filterButtonTextActive: {
-      color: "white",
-      backgroundColor: colors.primary,
-      borderRadius: 20,
-      paddingHorizontal: 8,
-      paddingVertical: 5,
-    },
+    // filterButtonTextActive: {
+    //   color: "white",
+    //   backgroundColor: colors.primary,
+    //   borderRadius: 20,
+    //   paddingHorizontal: 8,
+    //   paddingVertical: 5,
+    // },
     filterButtonSelected: {
       backgroundColor: colors.primary,
     },
@@ -314,7 +319,7 @@ const HomeScreen = () => {
     filterButtonTextSelected: {
       color: "white",
       backgroundColor: colors.primary,
-      fontWeight: '600',
+      fontWeight: '500',
     },
     tilesGrid: {
       flexDirection: 'row', // Keep row direction
@@ -500,7 +505,7 @@ const HomeScreen = () => {
       ))}
     </ScrollView>
   );
-
+  const  defaultColors = ['#1bffff', '#008192'];
   const filteredPrompts =
     selectedFilter === 'All'
       ? prompts
@@ -572,8 +577,8 @@ const HomeScreen = () => {
                   key={filter}
                   onPress={() => setSelectedFilter(filter)}
                   style={[
-                    styles.filterButton2,
-                    selectedFilter === filter && styles.filterButtonActive,
+                    // styles.filterButton2,
+                    selectedFilter === filter ? styles.filterButtonActive:styles.filterButton2,
                   ]}
                 >
                   <Text
@@ -593,6 +598,12 @@ const HomeScreen = () => {
               data={filteredPrompts}
               keyExtractor={(item) => item.title}
               renderItem={({ item }) => (
+                <LinearGradient
+                colors={['#1bffff', '#008192']} // Adjust colors for branding
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+
+                >
                 <TouchableOpacity
                   style={styles.listItem}
                   onPress={() => handleMessagePress(item.prompt ?? item.title, item.category)}
@@ -600,6 +611,7 @@ const HomeScreen = () => {
                   <Text style={styles.listText}>{item.title}</Text>
                   <ChevronRight size={20} style={styles.listIcon} />
                 </TouchableOpacity>
+                </LinearGradient>
               )}
               contentContainerStyle={{ paddingBottom: 40 }}
             />

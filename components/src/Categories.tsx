@@ -329,7 +329,7 @@ export const categories: Category[] = [
 
 export const prompts = [
   // E-Mail
-  { title: "📧   Write an email to promote the sale", category: "📧   E-Mail", prompt: 'Create an email using the given information.\n\n Product: Skincare Set\nCustomer Persona: Proffessional Women, ages 35\nUnique Selling Point: All-natural\nDesired Action: Purchase Skincare Set'},
+  { title: "📧   Write an email to promote the sale", category: "📧   E-Mail", prompt: 'Create an email using the given information.\n\n Product: Skincare Set\nCustomer Persona: Proffessional Women, ages 35\nUnique Selling Point: All-natural\nDesired Action: Purchase Skincare Set', colors: ['#1bffff', '#008192']},
   { title: "📰   Newsletter template", category: "📧   E-Mail", prompt: 'Write a newsletter for crypto market trend. The newsletter is in e-mail format' },
   { title: "😡   Mail response for any angry clients", category: "📧   E-Mail", prompt: 'You need to write a posting, persuasive and polite response mail to the angry customer e-mail.\nMail: I have used your product and I did not like it at all'},
   { title: "✉️   Email subject lines for high open rates", category: "📧   E-Mail", prompt: 'Create email subject lines for high open rates. Make catchy creative and clickable subject line suggestion for the Email' },
@@ -394,7 +394,7 @@ export const prompts = [
 
 
   // Social
- { title: "🎁   Gift Advice", category: "🗣️   Social", prompt: 'Ask about the person (age, interests, occasion) and suggest thoughtful and creative gift ideas.' },
+ { title: "🎁   Gift Advice", category: "🗣️   Social", prompt: 'Ask about the person (age, interests, occasion) and suggest thoughtful and creative gift ideas.', colors: ['#1bffff', '#008192'] },
 { title: "🎉   Event suggestion", category: "🗣️   Social", prompt: 'Suggest fun and unique event ideas based on occasion, audience, and budget. Start by asking the occasion.' },
 { title: "💘   Win someone's heart on a dating app", category: "🗣️   Social", prompt: 'Give me opening lines, bio tips, and chat strategies to impress someone on a dating app.' },
 { title: "🧥   Personal stylist", category: "🗣️   Social", prompt: 'Ask me my gender, size, and fashion goals. Then suggest stylish outfits and tips based on current trends.' },
