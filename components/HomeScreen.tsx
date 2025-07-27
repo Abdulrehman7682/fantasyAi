@@ -14,7 +14,7 @@ import RevenueCatUI from 'react-native-purchases-ui';
 import Purchases from 'react-native-purchases';
 import { supabase } from '../utils/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronRight } from 'lucide-react-native'; // Or use any icon lib
+import { ArrowUpRight } from 'lucide-react-native'; // Or use any icon lib
 import { categories, prompts } from './src/Categories';
 import { CHARACTER_PROMPTS } from 'utils/aiConfig';
 // Define Category type (make sure it includes all used fields)
@@ -379,21 +379,26 @@ const HomeScreen = () => {
       fontWeight: 'bold',
     },
     // Add this in your styles
+    gradientStyle : {
+      paddingVertical: 12,
+      marginVertical: 6,
+      borderRadius: 10,
+      marginBottom: 5,
+
+    },
     listItem: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 12,
-      marginVertical: 6,
+     
       paddingHorizontal: 16,
-      borderBottomWidth: 1,
-      borderTopWidth: 1,
-      borderLeftWidth: 1,
-      borderRightWidth: 1,
-      borderColor: colors.border, // light gray
-      backgroundColor: colors.cardBg,
-      borderRadius: 10,
-      marginBottom: 5,
+      //borderBottomWidth: 1,
+      //borderTopWidth: 1,
+      //borderLeftWidth: 1,
+      //borderRightWidth: 1,
+      // borderColor: colors.border, // light gray
+      //backgroundColor: colors.cardBg,
+     
     },
     listText: {
       fontSize: 13,
@@ -402,7 +407,7 @@ const HomeScreen = () => {
     },
     listIcon: {
       marginLeft: 8,
-      color: '#ff2e63',
+      color: '#363334ff',
     },
     getProButton: {
       // backgroundColor: '#FFA500',
@@ -599,17 +604,17 @@ const HomeScreen = () => {
               keyExtractor={(item) => item.title}
               renderItem={({ item }) => (
                 <LinearGradient
-                colors={['#1bffff', '#008192']} // Adjust colors for branding
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-
+                colors={item.colors ?? defaultColors} // Adjust colors for branding
+                start={{ x:0.5,y:0 }}
+                end={{ x: 0.5, y:1 }}
+                style={styles.gradientStyle}
                 >
                 <TouchableOpacity
-                  style={styles.listItem}
+                   style={styles.listItem}
                   onPress={() => handleMessagePress(item.prompt ?? item.title, item.category)}
                 >
                   <Text style={styles.listText}>{item.title}</Text>
-                  <ChevronRight size={20} style={styles.listIcon} />
+                  <ArrowUpRight size={20} style={styles.listIcon} />
                 </TouchableOpacity>
                 </LinearGradient>
               )}

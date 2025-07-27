@@ -329,30 +329,30 @@ export const categories: Category[] = [
 
 export const prompts = [
   // E-Mail
-  { title: "📧   Write an email to promote the sale", category: "📧   E-Mail", prompt: 'Create an email using the given information.\n\n Product: Skincare Set\nCustomer Persona: Proffessional Women, ages 35\nUnique Selling Point: All-natural\nDesired Action: Purchase Skincare Set', colors: ['#1bffff', '#008192']},
-  { title: "📰   Newsletter template", category: "📧   E-Mail", prompt: 'Write a newsletter for crypto market trend. The newsletter is in e-mail format' },
-  { title: "😡   Mail response for any angry clients", category: "📧   E-Mail", prompt: 'You need to write a posting, persuasive and polite response mail to the angry customer e-mail.\nMail: I have used your product and I did not like it at all'},
-  { title: "✉️   Email subject lines for high open rates", category: "📧   E-Mail", prompt: 'Create email subject lines for high open rates. Make catchy creative and clickable subject line suggestion for the Email' },
-  { title: "📣   Mass marketing email", category: "📧   E-Mail", prompt: 'I have a personal care company and I going to send a mass marketing email for the face mask product. This email should be persuasive, informative, creative.' },
-  { title: "🎨   Text formalize prettifier and fixer", category: "📧   E-Mail", prompt:'Act as a text formalizer Prettifier and fixer. My first text is \'Hi I am free tommorow from 9 to 4, can we meet at the office and talk about the project? i have questions\'' },
-  { title: "🤖   Email responder (friendly / professional)", category: "📧   E-Mail", prompt:'Considering the text I gave as an example, reply to an email sent to me separately in a friend text, a professinal text, and a welcoming text.' },
+  { title: "📧   Write an email to promote the sale", category: "📧   E-Mail", prompt: 'Create an email using the given information.\n\n Product: Skincare Set\nCustomer Persona: Proffessional Women, ages 35\nUnique Selling Point: All-natural\nDesired Action: Purchase Skincare Set', colors: ['#10B981', '#34D399'], },
+  { title: "📰   Newsletter template", category: "📧   E-Mail", prompt: 'Write a newsletter for crypto market trend. The newsletter is in e-mail format', colors: ['#10B981', '#34D399'], },
+  { title: "😡   Mail response for any angry clients", category: "📧   E-Mail", prompt: 'You need to write a posting, persuasive and polite response mail to the angry customer e-mail.\nMail: I have used your product and I did not like it at all', colors: ['#10B981', '#34D399'],},
+  { title: "✉️   Email subject lines for high open rates", category: "📧   E-Mail", prompt: 'Create email subject lines for high open rates. Make catchy creative and clickable subject line suggestion for the Email', colors: ['#10B981', '#34D399'], },
+  { title: "📣   Mass marketing email", category: "📧   E-Mail", prompt: 'I have a personal care company and I going to send a mass marketing email for the face mask product. This email should be persuasive, informative, creative.', colors: ['#10B981', '#34D399'], },
+  { title: "🎨   Text formalize prettifier and fixer", category: "📧   E-Mail", prompt:'Act as a text formalizer Prettifier and fixer. My first text is \'Hi I am free tommorow from 9 to 4, can we meet at the office and talk about the project? i have questions\'', colors: ['#10B981', '#34D399'], },
+  { title: "🤖   Email responder (friendly / professional)", category: "📧   E-Mail", prompt:'Considering the text I gave as an example, reply to an email sent to me separately in a friend text, a professinal text, and a welcoming text.', colors: ['#10B981', '#34D399'], },
 
   // Business & Marketing
-  { title: "📩   E-Mail generator", category: "💼   Business & Marketing", prompt:'Sell me this pen! Think creatively, concisely, smartly, shortly. ' },
-  { title: "📱   Social Media manager", category: "💼   Business & Marketing", prompt:'\"I need help managing the presence of an organization in Twitter in order to increase brand awareness\"' },
-  { title: "💡   Business idea", category: "💼   Business & Marketing", prompt:'Can you suggest 3 business ideas that I can start without investment? Give a different answer every time I ask.' },
-  { title: "📈   Digital marketing strategy", category: "💼   Business & Marketing", prompt:'I want to sell shoes, how are digital marketing srategies determined and how are these strategies applied? Can you briefly explain in 1 Paragraph?' },
-  { title: "🔍   SEO generator", category: "💼   Business & Marketing", prompt: 'Can you write me a short SEO friendly blog paragraph about the lifestyle of lions?' },
-  { title: "📊   Slide presentation", category: "💼   Business & Marketing", prompt: 'By asking questions about the theme, where will it be used, you will prepare a Professional Slide Presentation with this information.' },
-  { title: "📝   Prepare a professional business plan", category: "💼   Business & Marketing", prompt: 'Ask about my product and target country. You will create introduction, Phases for implementation, Differentiation from Copetitors, CONSs and PROs of the Business, Risks, Opportunities.' },
-  { title: "📦   All-in-one marketing", category: "💼   Business & Marketing", prompt: 'Ask about my product. You will create descritption and pain points of the Targe Audience, Marketing Copy, Script for Social Media Video ad, List of Keywords for SEO.' },
-  { title: "🧠   Social media caption generator", category: "💼   Business & Marketing", prompt:'Act as a Social Media Caption inspiration Generator. According to the information I have given, you will offer me 10 captions.\n\nConcept: Fitness and wellness Tupe and Platform: instagram Post\nCall to Action: Profile Click Emoji: Yes' },
-  { title: "💰   Make $100 a day", category: "💼   Business & Marketing", prompt:'You are asuccessful entrepreneur. Tell me a strategy to make $100 a day with unique and easy ways. Explain how to scale after you tell me the strategy.' },
-  { title: "👨‍💼   CEO (Virtual CEO Consultant)", category: "💼   Business & Marketing", prompt:'Act as CEO consultant. I will present you with business scenarios & challenges. Your role is to provide strategic advice, decisions,a nd solutions that a typical CEO would make. Your answers should reflect high-level executive thinking, considering the long-term impact, stakeholders, and overall company goals. You can start by asking me the topic.' },
-  { title: "💼   Business Tax Advisor", category: "💼   Business & Marketing", prompt:'You are a successful tax advisor. Tell me how to manage my taxes as an entrepreneur. Ask me questions one at a time to clarify important points that will affect the tax management. Go step by step and simplify your explanation for me to understand easily.' },
+  { title: "📩   E-Mail generator", category: "💼   Business & Marketing", prompt:'Sell me this pen! Think creatively, concisely, smartly, shortly. ',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "📱   Social Media manager", category: "💼   Business & Marketing", prompt:'\"I need help managing the presence of an organization in Twitter in order to increase brand awareness\"',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "💡   Business idea", category: "💼   Business & Marketing", prompt:'Can you suggest 3 business ideas that I can start without investment? Give a different answer every time I ask.',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "📈   Digital marketing strategy", category: "💼   Business & Marketing", prompt:'I want to sell shoes, how are digital marketing srategies determined and how are these strategies applied? Can you briefly explain in 1 Paragraph?' ,colors: ['#0EA5E9', '#38BDF8'],},
+  { title: "🔍   SEO generator", category: "💼   Business & Marketing", prompt: 'Can you write me a short SEO friendly blog paragraph about the lifestyle of lions?' ,colors: ['#0EA5E9', '#38BDF8'],},
+  { title: "📊   Slide presentation", category: "💼   Business & Marketing", prompt: 'By asking questions about the theme, where will it be used, you will prepare a Professional Slide Presentation with this information.',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "📝   Prepare a professional business plan", category: "💼   Business & Marketing", prompt: 'Ask about my product and target country. You will create introduction, Phases for implementation, Differentiation from Copetitors, CONSs and PROs of the Business, Risks, Opportunities.',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "📦   All-in-one marketing", category: "💼   Business & Marketing", prompt: 'Ask about my product. You will create descritption and pain points of the Targe Audience, Marketing Copy, Script for Social Media Video ad, List of Keywords for SEO.',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "🧠   Social media caption generator", category: "💼   Business & Marketing", prompt:'Act as a Social Media Caption inspiration Generator. According to the information I have given, you will offer me 10 captions.\n\nConcept: Fitness and wellness Tupe and Platform: instagram Post\nCall to Action: Profile Click Emoji: Yes',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "💰   Make $100 a day", category: "💼   Business & Marketing", prompt:'You are asuccessful entrepreneur. Tell me a strategy to make $100 a day with unique and easy ways. Explain how to scale after you tell me the strategy.' ,colors: ['#0EA5E9', '#38BDF8'],},
+  { title: "👨‍💼   CEO (Virtual CEO Consultant)", category: "💼   Business & Marketing", prompt:'Act as CEO consultant. I will present you with business scenarios & challenges. Your role is to provide strategic advice, decisions,a nd solutions that a typical CEO would make. Your answers should reflect high-level executive thinking, considering the long-term impact, stakeholders, and overall company goals. You can start by asking me the topic.',colors: ['#0EA5E9', '#38BDF8'], },
+  { title: "💼   Business Tax Advisor", category: "💼   Business & Marketing", prompt:'You are a successful tax advisor. Tell me how to manage my taxes as an entrepreneur. Ask me questions one at a time to clarify important points that will affect the tax management. Go step by step and simplify your explanation for me to understand easily.' ,colors: ['#0EA5E9', '#38BDF8'],},
 
   // Education
-  { title: "🔬   Science chat", category: "📚   Education", prompt: 'Act like a professor. Every time I write you fyi, you will give me new information. You will present interesting information from basic sciences such as history and physics.' },
+  { title: "🔬   Science chat", category: "📚   Education", prompt: 'Act like a professor. Every time I write you fyi, you will give me new information. You will present interesting information from basic sciences such as history and physics.',colors: ['#EF4444', '#F87171'],  },
   { title: "👨‍🏫   English Teacher", category: "📚   Education", prompt: 'Act as an English teacher. Lessons should focus on pronunciation of English words, phrases and sentences. Briefly summarize the topic in maximum of two paragraphs.\nTopic: Adjective.' },
   { title: "🌐   Translator", category: "📚   Education", prompt: 'I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in English. My first sentence is "Hola"' },
   { title: "➗   Math Teacher", category: "📚   Education", prompt: 'I want you to act as a math teacher. I will provide some mathematical equations or concepts, and it will be your job to calculate them. My first request is "346 x 569"' },
@@ -372,35 +372,35 @@ export const prompts = [
   { title: "📺   Write a south park episode", category: "🎨   Art", prompt: 'Act like a screenwriter. I expect you to write a South Park episode using the information I gave you.\nGuest Cast: Elon Musk\nEpisode Subject: End of the world' },
 
   //travel
-{ title: "🧳   Vacation planner", category: "✈️   Travel", prompt: 'I want to plan a vacation. Ask me where I want to go, how many days I have, and my budget. Then, help me plan a full vacation.' },
-{ title: "🍱   Local foods", category: "✈️   Travel", prompt: 'Give me a list of must-try local dishes from the country I’m visiting. Start by asking me the name of the country.' },
-{ title: "🗓️   Best time to visit", category: "✈️   Travel", prompt: 'Tell me the best time of year to visit a specific destination. Ask for the name of the country or city.' },
-{ title: "🏄   Activities", category: "✈️   Travel", prompt: 'I’m traveling to a location. Give me a list of fun, unique, or famous activities I should do there. Ask me where I’m going.' },
-{ title: "💵   Budgeting tips", category: "✈️   Travel", prompt: 'Help me create a travel budget. Ask about my destination, length of stay, and daily spending limit.' },
-{ title: "📅   Prepare Itinerary", category: "✈️   Travel", prompt: 'Ask me the location and duration of my trip. Then prepare a detailed travel itinerary with daily activities.' },
-{ title: "🛂   Cultural Legal Advisor For Safe Travels", category: "✈️   Travel", prompt: 'Give me important cultural, legal, and travel safety advice for the country I plan to visit. Start by asking me the destination.' },
-{ title: "🕰️   Time-Travel Machine", category: "✈️   Travel", prompt: 'If I could time travel to any era or place in history, what would I experience? Ask me which time period or civilization I want to visit.' },
+{ title: "🧳   Vacation planner", category: "✈️   Travel", prompt: 'I want to plan a vacation. Ask me where I want to go, how many days I have, and my budget. Then, help me plan a full vacation.',colors: ['#06B6D4', '#22D3EE'], },
+{ title: "🍱   Local foods", category: "✈️   Travel", prompt: 'Give me a list of must-try local dishes from the country I’m visiting. Start by asking me the name of the country.',colors: ['#06B6D4', '#22D3EE'], },
+{ title: "🗓️   Best time to visit", category: "✈️   Travel", prompt: 'Tell me the best time of year to visit a specific destination. Ask for the name of the country or city.',colors: ['#06B6D4', '#22D3EE'], },
+{ title: "🏄   Activities", category: "✈️   Travel", prompt: 'I’m traveling to a location. Give me a list of fun, unique, or famous activities I should do there. Ask me where I’m going.',colors: ['#06B6D4', '#22D3EE'], },
+{ title: "💵   Budgeting tips", category: "✈️   Travel", prompt: 'Help me create a travel budget. Ask about my destination, length of stay, and daily spending limit.',colors: ['#06B6D4', '#22D3EE'], },
+{ title: "📅   Prepare Itinerary", category: "✈️   Travel", prompt: 'Ask me the location and duration of my trip. Then prepare a detailed travel itinerary with daily activities.' ,colors: ['#06B6D4', '#22D3EE'],},
+{ title: "🛂   Cultural Legal Advisor For Safe Travels", category: "✈️   Travel", prompt: 'Give me important cultural, legal, and travel safety advice for the country I plan to visit. Start by asking me the destination.' ,colors: ['#06B6D4', '#22D3EE'],},
+{ title: "🕰️   Time-Travel Machine", category: "✈️   Travel", prompt: 'If I could time travel to any era or place in history, what would I experience? Ask me which time period or civilization I want to visit.',colors: ['#06B6D4', '#22D3EE'], },
 
 
-  // Relationship
- { title: "💑   Dating Tips", category: "💑   Relationship", prompt: 'Give me effective dating tips based on modern psychology and real-world experiences. You can ask my age, gender, and preferences.' },
-{ title: "🧠   Relationship Therapist", category: "💑   Relationship", prompt: 'Act as a relationship therapist. I will tell you my issue, and you’ll give me practical and empathetic advice.' },
-{ title: "❤️   Sex Therapist", category: "💑   Relationship", prompt: 'You are a certified sex therapist. Provide helpful, respectful, and educational answers to sex-related questions or concerns.' },
-{ title: "👗   Outfit Advisor for Upcoming Date", category: "💑   Relationship", prompt: 'Suggest me outfit ideas for my upcoming date. Ask my gender, style, date location, and weather.' },
-{ title: "🎮   Game Generator for Couples", category: "💑   Relationship", prompt: 'Suggest 5 fun, interactive, or romantic games that couples can play together to strengthen their bond.' },
-{ title: "📊   Calculation of Relationship Score", category: "💑   Relationship", prompt: 'Ask questions about my relationship and then calculate a compatibility or health score based on my answers.' },
-{ title: "💬   Deep Question to Ask to Partner", category: "💑   Relationship", prompt: 'Suggest me deep, emotional, and meaningful questions I can ask my partner to build intimacy.' },
-{ title: "👫   Is My Relationship Healthy Or Not", category: "💑   Relationship", prompt: 'Ask me a series of questions to help evaluate whether my relationship is healthy, balanced, and respectful.' },
+  // Relationship done
+ { title: "💑   Dating Tips", category: "💑   Relationship", prompt: 'Give me effective dating tips based on modern psychology and real-world experiences. You can ask my age, gender, and preferences.',colors: ['#EC4899', '#F472B6'], },
+{ title: "🧠   Relationship Therapist", category: "💑   Relationship", prompt: 'Act as a relationship therapist. I will tell you my issue, and you’ll give me practical and empathetic advice.' ,colors: ['#EC4899', '#F472B6'],},
+{ title: "❤️   Sex Therapist", category: "💑   Relationship", prompt: 'You are a certified sex therapist. Provide helpful, respectful, and educational answers to sex-related questions or concerns.',colors: ['#EC4899', '#F472B6'], },
+{ title: "👗   Outfit Advisor for Upcoming Date", category: "💑   Relationship", prompt: 'Suggest me outfit ideas for my upcoming date. Ask my gender, style, date location, and weather.' ,colors: ['#EC4899', '#F472B6'],},
+{ title: "🎮   Game Generator for Couples", category: "💑   Relationship", prompt: 'Suggest 5 fun, interactive, or romantic games that couples can play together to strengthen their bond.' ,colors: ['#EC4899', '#F472B6'],},
+{ title: "📊   Calculation of Relationship Score", category: "💑   Relationship", prompt: 'Ask questions about my relationship and then calculate a compatibility or health score based on my answers.' ,colors: ['#EC4899', '#F472B6'],},
+{ title: "💬   Deep Question to Ask to Partner", category: "💑   Relationship", prompt: 'Suggest me deep, emotional, and meaningful questions I can ask my partner to build intimacy.' ,colors: ['#EC4899', '#F472B6'],},
+{ title: "👫   Is My Relationship Healthy Or Not", category: "💑   Relationship", prompt: 'Ask me a series of questions to help evaluate whether my relationship is healthy, balanced, and respectful.',colors: ['#EC4899', '#F472B6'], },
 
 
-  // Social
- { title: "🎁   Gift Advice", category: "🗣️   Social", prompt: 'Ask about the person (age, interests, occasion) and suggest thoughtful and creative gift ideas.', colors: ['#1bffff', '#008192'] },
-{ title: "🎉   Event suggestion", category: "🗣️   Social", prompt: 'Suggest fun and unique event ideas based on occasion, audience, and budget. Start by asking the occasion.' },
-{ title: "💘   Win someone's heart on a dating app", category: "🗣️   Social", prompt: 'Give me opening lines, bio tips, and chat strategies to impress someone on a dating app.' },
-{ title: "🧥   Personal stylist", category: "🗣️   Social", prompt: 'Ask me my gender, size, and fashion goals. Then suggest stylish outfits and tips based on current trends.' },
-{ title: "👕   Outfit idea for event", category: "🗣️   Social", prompt: 'Help me choose an outfit for a specific event. Ask about the type of event, dress code, and my style.' },
-{ title: "💬   New topic to open a conversation", category: "🗣️   Social", prompt: 'Give me interesting, fun, and natural conversation starters I can use in social situations.' },
-{ title: "🎂   Birthday Message", category: "🗣️   Social", prompt: 'Write a heartfelt, funny, or creative birthday message. Ask me who it’s for and their personality.' },
+  // Social done
+ { title: "🎁   Gift Advice", category: "🗣️   Social", prompt: 'Ask about the person (age, interests, occasion) and suggest thoughtful and creative gift ideas.', colors: ['#22C55E', '#4ADE80'], },
+{ title: "🎉   Event suggestion", category: "🗣️   Social", prompt: 'Suggest fun and unique event ideas based on occasion, audience, and budget. Start by asking the occasion.', colors: ['#22C55E', '#4ADE80'], },
+{ title: "💘   Win someone's heart on a dating app", category: "🗣️   Social", prompt: 'Give me opening lines, bio tips, and chat strategies to impress someone on a dating app.' , colors: ['#22C55E', '#4ADE80'],},
+{ title: "🧥   Personal stylist", category: "🗣️   Social", prompt: 'Ask me my gender, size, and fashion goals. Then suggest stylish outfits and tips based on current trends.' , colors: ['#22C55E', '#4ADE80'],},
+{ title: "👕   Outfit idea for event", category: "🗣️   Social", prompt: 'Help me choose an outfit for a specific event. Ask about the type of event, dress code, and my style.' , colors: ['#22C55E', '#4ADE80'],},
+{ title: "💬   New topic to open a conversation", category: "🗣️   Social", prompt: 'Give me interesting, fun, and natural conversation starters I can use in social situations.' , colors: ['#22C55E', '#4ADE80'],},
+{ title: "🎂   Birthday Message", category: "🗣️   Social", prompt: 'Write a heartfelt, funny, or creative birthday message. Ask me who it’s for and their personality.', colors: ['#22C55E', '#4ADE80'], },
 
 
   // Health & Nutrition
