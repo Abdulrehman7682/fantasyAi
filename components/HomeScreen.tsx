@@ -27,6 +27,7 @@ type SubscribeHandler = () => Promise<void>;
 interface ChatCharacter {
   id: number | string; // Allow string IDs (from category.id)
   name: string;
+  gradientColors?: string[];
   description?: string;
   avatar: ImageSourcePropType | string;
   tags?: string[];
@@ -55,7 +56,7 @@ const HomeScreen = () => {
   const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
 
   const filters = [
-  '📧   E-Mail',
+  '📧   E-Mail', 
   '💼   Business & Marketing',
   '📚   Education',
   '🎨   Art',
@@ -115,13 +116,14 @@ const HomeScreen = () => {
   const getWelcomeMessage = () => {
     return "Welcome Back";
   };
-  const handleMessagePress = async (prompt: string, title: string) => {
+  const handleMessagePress = async (prompt: string, title: string , color: string[]) => {
     //const fetchedChar = await characterService.getCharacter('3');
      characterToPass = {
           id: 0, // Ensure we use the stable category.id
           name: title,
          // description: fetchedChar.description || category.description, // Fallback description
           avatar: require('../assets/profile-placeholder.png'),
+          gradientColors : color,
           tags: [title],
           category:title,
           openingMessage: prompt,
@@ -280,22 +282,34 @@ const HomeScreen = () => {
       marginRight: 10,
       backgroundColor: colors.cardBg,
     },
-     filterButton2: {
-      paddingVertical: 5,
+    gradientColorUnSelected: {
+      
+      alignItems: 'center', 
+      justifyContent: 'center',
+      marginRight: 8,
+      borderRadius: 20,
+    },
+    filterButton2: {
+       paddingVertical: 5,
       paddingHorizontal: 10,
-      backgroundColor: colors.cardBg,
+      //backgroundColor: colors.cardBg,
+      //marginBottom: 10,
+    },
+    
+    gradientColorSelected: {
+      alignItems: 'center', 
+      justifyContent: 'center',
+
       borderRadius: 20,
       marginRight: 8,
-      marginBottom: 10,
+      //marginBottom: 10,
+      paddingHorizontal: 10,
     },
     filterButtonActive: {
-      paddingVertical: 5,
-      paddingHorizontal: 10,
-      backgroundColor: colors.primary,
-      borderRadius: 20,
-      marginRight: 8,
-      marginBottom: 10,
+      //paddingVertical: 5,
+     // backgroundColor: colors.primary,
     },
+    
     filterButtonText2: {
       color: colors.text,
       fontSize: 13,
@@ -510,6 +524,21 @@ const HomeScreen = () => {
       ))}
     </ScrollView>
   );
+  const keycolors  = [
+    {
+      colors: ['#10B981', '#34D399'],
+
+    },
+    {colors: ['#0EA5E9', '#38BDF8'],},
+    {colors: ['#D946EF', '#E879F9'],},
+    {colors: ['#F59E0B', '#FBBF24'],},
+    {colors: ['#06B6D4', '#22D3EE'],},
+    {colors: ['#EC4899', '#F472B6'],},
+    {colors: ['#0E7490', '#0891B2'],},
+    {colors: ['#22C55E', '#4ADE80'],},
+    {colors: ['#3B82F6', '#60A5FA'],},
+
+  ];
   const  defaultColors = ['#1bffff', '#008192'];
   const filteredPrompts =
     selectedFilter === 'All'
@@ -577,7 +606,15 @@ const HomeScreen = () => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 10, marginBottom: 10 }}
             >
-              {filters.map(filter => (
+              {filters.map((filter, index) => (
+                <LinearGradient
+                key={index}
+                colors={filter === selectedFilter ? keycolors[index].colors : [colors.cardBg, colors.cardBg]}
+                start={{ x:0.5,y:0 }}
+                end={{ x: 0.5, y:1 }}
+                style={filter === selectedFilter ? styles.gradientColorSelected: styles.gradientColorUnSelected}
+                >
+
                 <TouchableOpacity
                   key={filter}
                   onPress={() => setSelectedFilter(filter)}
@@ -595,6 +632,7 @@ const HomeScreen = () => {
                     {filter}
                   </Text>
                 </TouchableOpacity>
+                </LinearGradient>
               ))}
             </ScrollView>
 
@@ -611,7 +649,7 @@ const HomeScreen = () => {
                 >
                 <TouchableOpacity
                    style={styles.listItem}
-                  onPress={() => handleMessagePress(item.prompt ?? item.title, item.category)}
+                  onPress={() => handleMessagePress(item.prompt ?? item.title, item.category , item.colors)}
                 >
                   <Text style={styles.listText}>{item.title}</Text>
                   <ArrowUpRight size={20} style={styles.listIcon} />

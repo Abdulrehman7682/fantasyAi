@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
+
 import { StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { startOfToday } from "date-fns";
@@ -70,6 +71,7 @@ type ChatScreenRouteProp = RouteProp<RootStackParamList, 'Chat'>;
 interface Character {
   id: number | string; // Allow string or number ID to match navigation params
   name: string;
+  gradientColors?: string[];
   description?: string;
   avatar: ImageSourcePropType | string;
   tags?: string[];
@@ -113,6 +115,7 @@ interface MessageItemProps {
   item: UIMessage;
   characterAvatar: ImageSourcePropType | string;
   characterIconName?: keyof typeof Ionicons.glyphMap; // Add icon name prop
+  boxColors?: Character['gradientColors']; // Optional gradient colors for character
 }
 
 interface ChatInputProps {
@@ -556,10 +559,11 @@ const TypingIndicatorDisplay = React.memo(({ character }: TypingIndicatorDisplay
   );
 });
 
+
 /**
  * Message item component
  */
-const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: MessageItemProps) => {
+const MessageItem = React.memo(({ item, characterAvatar, characterIconName, boxColors }: MessageItemProps) => {
   const { colors, isDarkMode } = useTheme();
   const isUser = item.sender === 'user';
   const formattedTime = useMemo(() => {
@@ -618,16 +622,13 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
     userMessageContainer: {
       alignItems: 'flex-end',
     },
+    gradientColors: {
+
+      borderRadius: 20,
+    },
     userMessageBubble: {
       paddingVertical: 10,
       paddingHorizontal: 15,
-      borderRadius: 20,
-      borderBottomRightRadius: 5,
-      backgroundColor: colors.primary,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.18,
-      shadowRadius: 3,
       elevation: 3,
     },
     userMessageText: {
@@ -667,16 +668,16 @@ const MessageItem = React.memo(({ item, characterAvatar, characterIconName }: Me
       color: colors.text,
     },
     messageImage: {
-  width: 220,
-  height: 220,
-  borderRadius: 12,
-  marginBottom: 8,
-  backgroundColor: '#ccc', // placeholder background to avoid flicker
-},
-messageContentWrapper: {
-  flexDirection: 'column',
-  gap: 6, // or use marginBottom on image for spacing
-},
+      width: 220,
+      height: 220,
+      borderRadius: 12,
+      marginBottom: 8,
+      backgroundColor: '#ccc', // placeholder background to avoid flicker
+    },
+    messageContentWrapper: {
+      flexDirection: 'column',
+      gap: 6, // or use marginBottom on image for spacing
+    },
 
     timestamp: {
       fontSize: 11,
@@ -702,65 +703,73 @@ messageContentWrapper: {
   );
 
   return (
-  <Animated.View
-  style={[
-    styles.messageRow,
-    isUser ? styles.userMessageRow : styles.aiMessageRow,
-    {
-      opacity: fadeAnim,
-      transform: [
-        { translateY: slideAnim },
-        { scale: scaleAnim },
-      ],
-    },
-  ]}
->
-  {!isUser && (
-    <View style={styles.aiIconAvatarContainer}>
-      {aiRepresentation}
-    </View>
-  )}
-
-  <View style={isUser ? styles.userMessageContainer : styles.aiMessageBubble}>
-    <View style={isUser ? styles.userMessageBubble : null}>
-      {(item.image_url || item.text) && (
-        <View style={styles.messageContentWrapper}>
-          {/* Image */}
-          {item.image_url && (
-            <Image
-              source={{ uri: item.image_url }}
-              style={styles.messageImage}
-              resizeMode="cover"
-              onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
-            />
-          )}
-
-          {/* Text */}
-          {item.text && (
-            <Text style={isUser ? styles.userMessageText : styles.messageText}>
-              {item.text}
-            </Text>
-          )}
-
-          {/* Timestamp and Read Status */}
-          <View style={styles.timestampReadStatusContainer}>
-            <Text style={isUser ? styles.userTimestamp : styles.timestamp}>
-              {formattedTime}
-            </Text>
-            {isUser && (
-              <Ionicons
-                name="checkmark-done"
-                size={15}
-                color={isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.8)'}
-                style={styles.readStatusIcon}
-              />
-            )}
-          </View>
+    <Animated.View
+      style={[
+        styles.messageRow,
+        isUser ? styles.userMessageRow : styles.aiMessageRow,
+        {
+          opacity: fadeAnim,
+          transform: [
+            { translateY: slideAnim },
+            { scale: scaleAnim },
+          ],
+        },
+      ]}
+    >
+      {!isUser && (
+        <View style={styles.aiIconAvatarContainer}>
+          {aiRepresentation}
         </View>
       )}
-    </View>
-  </View>
-</Animated.View>
+
+      <View style={isUser ? styles.userMessageContainer : styles.aiMessageBubble}>
+        <LinearGradient
+          colors={isUser ? boxColors ?? [colors.primary, colors.primary] : ['transparent', 'transparent']} // Adjust colors for branding
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style = {isUser ? styles.gradientColors : null}
+        >
+
+          <View style={isUser ? styles.userMessageBubble : null}>
+            {(item.image_url || item.text) && (
+              <View style={styles.messageContentWrapper}>
+                {/* Image */}
+                {item.image_url && (
+                  <Image
+                    source={{ uri: item.image_url }}
+                    style={styles.messageImage}
+                    resizeMode="cover"
+                    onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
+                  />
+                )}
+
+                {/* Text */}
+                {item.text && (
+                  <Text style={isUser ? styles.userMessageText : styles.messageText}>
+                    {item.text}
+                  </Text>
+                )}
+
+                {/* Timestamp and Read Status */}
+                <View style={styles.timestampReadStatusContainer}>
+                  <Text style={isUser ? styles.userTimestamp : styles.timestamp}>
+                    {formattedTime}
+                  </Text>
+                  {isUser && (
+                    <Ionicons
+                      name="checkmark-done"
+                      size={15}
+                      color={isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.8)'}
+                      style={styles.readStatusIcon}
+                    />
+                  )}
+                </View>
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+      </View>
+    </Animated.View>
 
 
   );
@@ -1195,7 +1204,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [messagesCount, setMessagesCount] = useState(0); // <-- Track total messages count
   const [userSubscribed, setUserSubscribed] = useState(false); // <-- Track total messages count
   const [initialMessageRead, setInitialMessageRead] = useState(0);
-    const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [transcript, setTranscript] = useState('');
   const recordingRef = useRef<Audio.Recording | null>(null);
 
@@ -1276,19 +1285,19 @@ export default function ChatScreen({ route }: ChatScreenProps) {
    * Handle pressing the microphone icon
    */
   const getAssemblyApiKey = async (): Promise<string | null> => {
-  const { data, error } = await supabase
-   .from('ai_key')
+    const { data, error } = await supabase
+      .from('ai_key')
       .select('*')
       .eq('key_name', "assemblyAi")
       .single();
 
-  if (error) {
-    console.error('❌ Failed to load API key from Supabase:', error.message);
-    return null;
-  }
+    if (error) {
+      console.error('❌ Failed to load API key from Supabase:', error.message);
+      return null;
+    }
 
- return data?.api_key || null;
-};
+    return data?.api_key || null;
+  };
   // const ASSEMBLYAI_API_KEY = '4ee421621622471d9f755e78b6c2c556'; // 🔑 Replace with your real key
   // const ASSEMBLYAI_API_KEY = getAssemblyApiKey(); // 🔑 Replace with your real key
   //   useEffect(() => {
@@ -1301,102 +1310,102 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   //   };
   // }, []);
 
- 
- const handleMicPress = useCallback(async () => {
- const ASSEMBLYAI_API_KEY = await getAssemblyApiKey()
- console.log("key type" , ASSEMBLYAI_API_KEY)
-  try {
-    if (isRecording && recordingRef.current) {
-      // STOP recording
-      setIsRecording(false);
-      setIsLoading(true);
 
-      try {
-        await recordingRef.current.stopAndUnloadAsync();
-      } catch (e) {
-        console.log('Stop failed (possibly already stopped):', e);
-      }
+  const handleMicPress = useCallback(async () => {
+    const ASSEMBLYAI_API_KEY = await getAssemblyApiKey()
+    console.log("key type", ASSEMBLYAI_API_KEY)
+    try {
+      if (isRecording && recordingRef.current) {
+        // STOP recording
+        setIsRecording(false);
+        setIsLoading(true);
 
-      const uri = recordingRef.current.getURI();
-      recordingRef.current.setOnRecordingStatusUpdate(null);
-      recordingRef.current = null;
-      setRecording(null);
-
-      if (uri) {
-        const blob = await (await fetch(uri)).blob();
-
-        const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
-          method: 'POST',
-          headers: { authorization: ASSEMBLYAI_API_KEY },
-          body: blob,
-        });
-
-        const { upload_url } = await uploadRes.json();
-
-        const transcriptRes = await fetch('https://api.assemblyai.com/v2/transcript', {
-          method: 'POST',
-          headers: {
-            authorization: ASSEMBLYAI_API_KEY,
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({ audio_url: upload_url }),
-        });
-
-        const { id } = await transcriptRes.json();
-
-        let done = false;
-        while (!done) {
-          await new Promise(res => setTimeout(res, 3000));
-          const polling = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
-            headers: { authorization: ASSEMBLYAI_API_KEY },
-          });
-
-          const data = await polling.json();
-
-          if (data.status === 'completed') {
-            done = true;
-            setInputText(data.text);
-          } else if (data.status === 'error') {
-            throw new Error('Transcription failed');
-          }
-        }
-      }
-      setIsLoading(false);
-    } else {
-      // START recording
-      if (recordingRef.current) {
         try {
           await recordingRef.current.stopAndUnloadAsync();
-        } catch (e) {}
+        } catch (e) {
+          console.log('Stop failed (possibly already stopped):', e);
+        }
+
+        const uri = recordingRef.current.getURI();
         recordingRef.current.setOnRecordingStatusUpdate(null);
         recordingRef.current = null;
         setRecording(null);
+
+        if (uri) {
+          const blob = await (await fetch(uri)).blob();
+
+          const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
+            method: 'POST',
+            headers: { authorization: ASSEMBLYAI_API_KEY },
+            body: blob,
+          });
+
+          const { upload_url } = await uploadRes.json();
+
+          const transcriptRes = await fetch('https://api.assemblyai.com/v2/transcript', {
+            method: 'POST',
+            headers: {
+              authorization: ASSEMBLYAI_API_KEY,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({ audio_url: upload_url }),
+          });
+
+          const { id } = await transcriptRes.json();
+
+          let done = false;
+          while (!done) {
+            await new Promise(res => setTimeout(res, 3000));
+            const polling = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
+              headers: { authorization: ASSEMBLYAI_API_KEY },
+            });
+
+            const data = await polling.json();
+
+            if (data.status === 'completed') {
+              done = true;
+              setInputText(data.text);
+            } else if (data.status === 'error') {
+              throw new Error('Transcription failed');
+            }
+          }
+        }
+        setIsLoading(false);
+      } else {
+        // START recording
+        if (recordingRef.current) {
+          try {
+            await recordingRef.current.stopAndUnloadAsync();
+          } catch (e) { }
+          recordingRef.current.setOnRecordingStatusUpdate(null);
+          recordingRef.current = null;
+          setRecording(null);
+        }
+
+        const permission = await Audio.requestPermissionsAsync();
+        if (permission.status !== 'granted') {
+          Alert.alert('Microphone permission required');
+          return;
+        }
+
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        });
+
+        const { recording } = await Audio.Recording.createAsync(
+          Audio.RecordingOptionsPresets.HIGH_QUALITY
+        );
+
+        recordingRef.current = recording;
+        setRecording(recording);
+        setIsRecording(true);
       }
-
-      const permission = await Audio.requestPermissionsAsync();
-      if (permission.status !== 'granted') {
-        Alert.alert('Microphone permission required');
-        return;
-      }
-
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-
-      recordingRef.current = recording;
-      setRecording(recording);
-      setIsRecording(true);
+    } catch (err) {
+      console.error('Start recording error:', err);
+      Alert.alert('⚠️ Mic Error', 'Only one recording object allowed. Restart Expo Go if this repeats.');
     }
-  } catch (err) {
-    console.error('Start recording error:', err);
-    Alert.alert('⚠️ Mic Error', 'Only one recording object allowed. Restart Expo Go if this repeats.');
-  }
-}, [isRecording, setInputText]);
+  }, [isRecording, setInputText]);
 
 
 
@@ -1691,56 +1700,56 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             return;
           }
         }
-        let publicUrl : string = '';
+        let publicUrl: string = '';
         if (stagedMedia?.base64) {
-  const base64 = stagedMedia.base64;
-  const mimeType = stagedMedia.mimeType || 'image/jpeg';
-  const fileName = stagedMedia?.uri;
+          const base64 = stagedMedia.base64;
+          const mimeType = stagedMedia.mimeType || 'image/jpeg';
+          const fileName = stagedMedia?.uri;
 
-  // Convert base64 to ArrayBuffer
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
+          // Convert base64 to ArrayBuffer
+          const binaryString = atob(base64);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
 
-  // Upload using ArrayBuffer
-  const { data, error } = await supabase.storage
-    .from('images')
-    .upload(fileName, bytes.buffer, {
-      contentType: mimeType,
-      upsert: false,
-    });
+          // Upload using ArrayBuffer
+          const { data, error } = await supabase.storage
+            .from('images')
+            .upload(fileName, bytes.buffer, {
+              contentType: mimeType,
+              upsert: false,
+            });
 
-  if (error) {
-    console.error('Upload failed:', error);
-  } else {
-    console.log('Upload succeeded:', data);
-  }
+          if (error) {
+            console.error('Upload failed:', error);
+          } else {
+            console.log('Upload succeeded:', data);
+          }
 
-  const { data: urlData, error: urlError } = supabase.storage
-    .from('images')
-    .getPublicUrl(fileName);
+          const { data: urlData, error: urlError } = supabase.storage
+            .from('images')
+            .getPublicUrl(fileName);
 
-  if (urlError) {
-    console.error('URL error:', urlError);
-    return;
-  }
+          if (urlError) {
+            console.error('URL error:', urlError);
+            return;
+          }
 
-   publicUrl = urlData.publicUrl;
-  console.log('Public URL:', publicUrl);
-}
+          publicUrl = urlData.publicUrl;
+          console.log('Public URL:', publicUrl);
+        }
 
 
         // Save message in Supabase
         const { data, error } = await supabase
           .from("message_and_subscription")
-          .insert([{ user_id: user.id, message: textToSend, character_id: characterIdNum, sender: 'user',image_url:publicUrl  }])
+          .insert([{ user_id: user.id, message: textToSend, character_id: characterIdNum, sender: 'user', image_url: publicUrl }])
           .select();
-          console.log('url stored: ,', publicUrl);
+        console.log('url stored: ,', publicUrl);
 
-      setMessages(prev => [...prev, userMessage]);
+        setMessages(prev => [...prev, userMessage]);
         setIsAISpeaking(true);
         console.log("insert result:", data, error);
         setMessagesCount(prevCount => prevCount + 1); // Increment messages count
@@ -2056,6 +2065,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         item={item}
         characterAvatar={character?.avatar || require('../assets/profile-placeholder.png')}
         characterIconName={characterIconName} // Pass the derived icon name
+        boxColors={character?.gradientColors}
       />
     );
   }, [character?.avatar, characterIconName]); // Add characterIconName here

@@ -352,24 +352,24 @@ export const prompts = [
   { title: "💼   Business Tax Advisor", category: "💼   Business & Marketing", prompt:'You are a successful tax advisor. Tell me how to manage my taxes as an entrepreneur. Ask me questions one at a time to clarify important points that will affect the tax management. Go step by step and simplify your explanation for me to understand easily.' ,colors: ['#0EA5E9', '#38BDF8'],},
 
   // Education
-  { title: "🔬   Science chat", category: "📚   Education", prompt: 'Act like a professor. Every time I write you fyi, you will give me new information. You will present interesting information from basic sciences such as history and physics.',colors: ['#EF4444', '#F87171'],  },
-  { title: "👨‍🏫   English Teacher", category: "📚   Education", prompt: 'Act as an English teacher. Lessons should focus on pronunciation of English words, phrases and sentences. Briefly summarize the topic in maximum of two paragraphs.\nTopic: Adjective.' },
-  { title: "🌐   Translator", category: "📚   Education", prompt: 'I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in English. My first sentence is "Hola"' },
-  { title: "➗   Math Teacher", category: "📚   Education", prompt: 'I want you to act as a math teacher. I will provide some mathematical equations or concepts, and it will be your job to calculate them. My first request is "346 x 569"' },
-  { title: "📄   Create a short essay on any topic", category: "📚   Education", prompt: 'Create a short essay on Glycemic Index.  It must be introduction, development, conclusion, shorter than 400 characters.' },
-  { title: "📚   Citation Generator for any style", category: "📚   Education", prompt: 'You will write APA style citation.\nAuthor(s): Joe Schank\nTitle of entry: Where is AI?\nTitle of encyclopedia: AI In The World\nPublisher: AI Society\nPublication date: 01/22/2007' },
-  { title: "🎓   Course generator on any topic", category: "📚   Education", prompt: 'You will write APA style citation.\nAuthor(s): Joe Schank\nTitle of entry: Where is AI?\nTitle of encyclopedia: AI In The World\nPublisher: AI Society\nPublication date: 01/22/2007' },
+  { title: "🔬   Science chat", category: "📚   Education", prompt: 'Act like a professor. Every time I write you fyi, you will give me new information. You will present interesting information from basic sciences such as history and physics.',colors: ['#D946EF', '#E879F9'],  },
+  { title: "👨‍🏫   English Teacher", category: "📚   Education", prompt: 'Act as an English teacher. Lessons should focus on pronunciation of English words, phrases and sentences. Briefly summarize the topic in maximum of two paragraphs.\nTopic: Adjective.',colors: ['#D946EF', '#E879F9'],   },
+  { title: "🌐   Translator", category: "📚   Education", prompt: 'I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in English. My first sentence is "Hola"',colors: ['#D946EF', '#E879F9'],   },
+  { title: "➗   Math Teacher", category: "📚   Education", prompt: 'I want you to act as a math teacher. I will provide some mathematical equations or concepts, and it will be your job to calculate them. My first request is "346 x 569"',colors: ['#D946EF', '#E879F9'],   },
+  { title: "📄   Create a short essay on any topic", category: "📚   Education", prompt: 'Create a short essay on Glycemic Index.  It must be introduction, development, conclusion, shorter than 400 characters.',colors: ['#D946EF', '#E879F9'],   },
+  { title: "📚   Citation Generator for any style", category: "📚   Education", prompt: 'You will write APA style citation.\nAuthor(s): Joe Schank\nTitle of entry: Where is AI?\nTitle of encyclopedia: AI In The World\nPublisher: AI Society\nPublication date: 01/22/2007',colors: ['#D946EF', '#E879F9'],   },
+  { title: "🎓   Course generator on any topic", category: "📚   Education", prompt: 'You will write APA style citation.\nAuthor(s): Joe Schank\nTitle of entry: Where is AI?\nTitle of encyclopedia: AI In The World\nPublisher: AI Society\nPublication date: 01/22/2007',colors: ['#D946EF', '#E879F9'],   },
 
   // Art
-  { title: "📖   Write J.K.Rowling-style short story", category: "🎨   Art", prompt: 'Write J. K. Rowling-style short story. Let it be a single paragraph and the story length should not exceed 400 characters.' },
-  { title: "🎵   Write Travis Scott-style song lyrics", category: "🎨   Art", prompt: 'Write Travis Scott-style song lyrics' },
-  { title: "🎶   Create a playlist similar to your favorite song", category: "🎨   Art", prompt: 'Act as a song recommender. I will provide you with a song and you will create a playlist of 10 songs that are similar to the given song. My first song is "Eminem - Business".' },
-  { title: "🧙   Storyteller", category: "🎨   Art", prompt: 'What would happen if a non-technological person found himself in the world of high technology?' },
-  { title: "📘   Book recommendation", category: "🎨   Art", prompt: 'Recommend 3 book story for me' },
-  { title: "📝   Poem generator", category: "🎨   Art", prompt: 'Act as a poet. You will create poems that evoke emotions and have the power to stir people’s soul. Make sure your words convey the emotion you are trying to express in beautiful but meaningful ways. You can also come up with short verses that are still powerful enough to leave an imprint in readers’ minds. My first request is:\n"I need a poem about love."' },
-  { title: "🎬   Movie and series critic", category: "🎨   Art", prompt: 'Act as Movie and Series critic. You will develop an engaging and creative review. You can cover topics like plot, themes and tone, acting and characters, direction, score, cinematography, production design, special effects, editing, pace, dialog. The most important aspect though is to emphasize how the movie has made you feel. You can also be critical about the movie. Please avoid spoilers.Movie: Everything Everywhere all at once' },
-  { title: "🎤   Song generate according to your mood", category: "🎨   Art", prompt: 'You will suggest me 5 songs in accordance with the information I have given,\n\nMood: Millionaire\nGenre: Hip-Hop' },
-  { title: "📺   Write a south park episode", category: "🎨   Art", prompt: 'Act like a screenwriter. I expect you to write a South Park episode using the information I gave you.\nGuest Cast: Elon Musk\nEpisode Subject: End of the world' },
+  { title: "📖   Write J.K.Rowling-style short story", category: "🎨   Art", prompt: 'Write J. K. Rowling-style short story. Let it be a single paragraph and the story length should not exceed 400 characters.',colors: ['#F59E0B', '#FBBF24'], },
+  { title: "🎵   Write Travis Scott-style song lyrics", category: "🎨   Art", prompt: 'Write Travis Scott-style song lyrics',colors: ['#F59E0B', '#FBBF24'], },
+  { title: "🎶   Create a playlist similar to your favorite song", category: "🎨   Art", prompt: 'Act as a song recommender. I will provide you with a song and you will create a playlist of 10 songs that are similar to the given song. My first song is "Eminem - Business".' ,colors: ['#F59E0B', '#FBBF24'],},
+  { title: "🧙   Storyteller", category: "🎨   Art", prompt: 'What would happen if a non-technological person found himself in the world of high technology?' ,colors: ['#F59E0B', '#FBBF24'],},
+  { title: "📘   Book recommendation", category: "🎨   Art", prompt: 'Recommend 3 book story for me' ,colors: ['#F59E0B', '#FBBF24'],},
+  { title: "📝   Poem generator", category: "🎨   Art", prompt: 'Act as a poet. You will create poems that evoke emotions and have the power to stir people’s soul. Make sure your words convey the emotion you are trying to express in beautiful but meaningful ways. You can also come up with short verses that are still powerful enough to leave an imprint in readers’ minds. My first request is:\n"I need a poem about love."' ,colors: ['#F59E0B', '#FBBF24'],},
+  { title: "🎬   Movie and series critic", category: "🎨   Art", prompt: 'Act as Movie and Series critic. You will develop an engaging and creative review. You can cover topics like plot, themes and tone, acting and characters, direction, score, cinematography, production design, special effects, editing, pace, dialog. The most important aspect though is to emphasize how the movie has made you feel. You can also be critical about the movie. Please avoid spoilers.Movie: Everything Everywhere all at once',colors: ['#F59E0B', '#FBBF24'], },
+  { title: "🎤   Song generate according to your mood", category: "🎨   Art", prompt: 'You will suggest me 5 songs in accordance with the information I have given,\n\nMood: Millionaire\nGenre: Hip-Hop' ,colors: ['#F59E0B', '#FBBF24'],},
+  { title: "📺   Write a south park episode", category: "🎨   Art", prompt: 'Act like a screenwriter. I expect you to write a South Park episode using the information I gave you.\nGuest Cast: Elon Musk\nEpisode Subject: End of the world',colors: ['#F59E0B', '#FBBF24'], },
 
   //travel
 { title: "🧳   Vacation planner", category: "✈️   Travel", prompt: 'I want to plan a vacation. Ask me where I want to go, how many days I have, and my budget. Then, help me plan a full vacation.',colors: ['#06B6D4', '#22D3EE'], },
@@ -394,34 +394,34 @@ export const prompts = [
 
 
   // Social done
- { title: "🎁   Gift Advice", category: "🗣️   Social", prompt: 'Ask about the person (age, interests, occasion) and suggest thoughtful and creative gift ideas.', colors: ['#22C55E', '#4ADE80'], },
-{ title: "🎉   Event suggestion", category: "🗣️   Social", prompt: 'Suggest fun and unique event ideas based on occasion, audience, and budget. Start by asking the occasion.', colors: ['#22C55E', '#4ADE80'], },
-{ title: "💘   Win someone's heart on a dating app", category: "🗣️   Social", prompt: 'Give me opening lines, bio tips, and chat strategies to impress someone on a dating app.' , colors: ['#22C55E', '#4ADE80'],},
-{ title: "🧥   Personal stylist", category: "🗣️   Social", prompt: 'Ask me my gender, size, and fashion goals. Then suggest stylish outfits and tips based on current trends.' , colors: ['#22C55E', '#4ADE80'],},
-{ title: "👕   Outfit idea for event", category: "🗣️   Social", prompt: 'Help me choose an outfit for a specific event. Ask about the type of event, dress code, and my style.' , colors: ['#22C55E', '#4ADE80'],},
-{ title: "💬   New topic to open a conversation", category: "🗣️   Social", prompt: 'Give me interesting, fun, and natural conversation starters I can use in social situations.' , colors: ['#22C55E', '#4ADE80'],},
-{ title: "🎂   Birthday Message", category: "🗣️   Social", prompt: 'Write a heartfelt, funny, or creative birthday message. Ask me who it’s for and their personality.', colors: ['#22C55E', '#4ADE80'], },
+ { title: "🎁   Gift Advice", category: "🗣️   Social", prompt: 'Ask about the person (age, interests, occasion) and suggest thoughtful and creative gift ideas.', colors: ['#0E7490', '#0891B2'], },
+{ title: "🎉   Event suggestion", category: "🗣️   Social", prompt: 'Suggest fun and unique event ideas based on occasion, audience, and budget. Start by asking the occasion.', colors: ['#0E7490', '#0891B2'], },
+{ title: "💘   Win someone's heart on a dating app", category: "🗣️   Social", prompt: 'Give me opening lines, bio tips, and chat strategies to impress someone on a dating app.' , colors: ['#0E7490', '#0891B2'],},
+{ title: "🧥   Personal stylist", category: "🗣️   Social", prompt: 'Ask me my gender, size, and fashion goals. Then suggest stylish outfits and tips based on current trends.' , colors: ['#0E7490', '#0891B2'],},
+{ title: "👕   Outfit idea for event", category: "🗣️   Social", prompt: 'Help me choose an outfit for a specific event. Ask about the type of event, dress code, and my style.' , colors: ['#0E7490', '#0891B2'],},
+{ title: "💬   New topic to open a conversation", category: "🗣️   Social", prompt: 'Give me interesting, fun, and natural conversation starters I can use in social situations.' , colors: ['#0E7490', '#0891B2'],},
+{ title: "🎂   Birthday Message", category: "🗣️   Social", prompt: 'Write a heartfelt, funny, or creative birthday message. Ask me who it’s for and their personality.', colors: ['#0E7490', '#0891B2'], },
 
 
   // Health & Nutrition
- { title: "🧘   Life Coach", category: "🥗   Health & Nutrition", prompt: 'Act as a life coach. Ask about my goals and challenges, and give me daily motivation and realistic personal development advice.' },
-{ title: "🥗   Dietitian", category: "🥗   Health & Nutrition", prompt: 'Act as a certified dietitian. Ask me about my goals, allergies, and eating habits, then give me a personalized meal plan.' },
-{ title: "🏋️   Abs-Boosting workouts program", category: "🥗   Health & Nutrition", prompt: 'Give me a weekly workout program focused on boosting my abs. Ask about my fitness level and available equipment.' },
-{ title: "🧘‍♀️   Yoga Poses", category: "🥗   Health & Nutrition", prompt: 'Suggest a yoga pose routine based on my level (beginner, intermediate, advanced) and goal (flexibility, relaxation, strength).' },
-{ title: "🥙   Vegan Lunch", category: "🥗   Health & Nutrition", prompt: 'Give me a healthy and easy-to-make vegan lunch recipe using common ingredients.' },
-{ title: "🍽️   How many calories should I eat in a day?", category: "🥗   Health & Nutrition", prompt: 'Help me calculate my ideal daily calorie intake. Ask for my age, gender, weight, height, and activity level.' },
-{ title: "🎥   Youtube Channel about Health, Nutrition and Sports", category: "🥗   Health & Nutrition", prompt: 'Help me create a YouTube channel plan about Health, Nutrition, and Sports. Suggest channel name, content strategy, and video topics.' },
-{ title: "📅   Training Plan Generator", category: "🥗   Health & Nutrition", prompt: 'Ask me about my fitness goals and experience. Then generate a personalized weekly training plan.' },
+ { title: "🧘   Life Coach", category: "🥗   Health & Nutrition", prompt: 'Act as a life coach. Ask about my goals and challenges, and give me daily motivation and realistic personal development advice.',colors: ['#22C55E', '#4ADE80'], },
+{ title: "🥗   Dietitian", category: "🥗   Health & Nutrition", prompt: 'Act as a certified dietitian. Ask me about my goals, allergies, and eating habits, then give me a personalized meal plan.',colors: ['#22C55E', '#4ADE80'], },
+{ title: "🏋️   Abs-Boosting workouts program", category: "🥗   Health & Nutrition", prompt: 'Give me a weekly workout program focused on boosting my abs. Ask about my fitness level and available equipment.',colors: ['#22C55E', '#4ADE80'], },
+{ title: "🧘‍♀️   Yoga Poses", category: "🥗   Health & Nutrition", prompt: 'Suggest a yoga pose routine based on my level (beginner, intermediate, advanced) and goal (flexibility, relaxation, strength).',colors: ['#22C55E', '#4ADE80'], },
+{ title: "🥙   Vegan Lunch", category: "🥗   Health & Nutrition", prompt: 'Give me a healthy and easy-to-make vegan lunch recipe using common ingredients.',colors: ['#22C55E', '#4ADE80'], },
+{ title: "🍽️   How many calories should I eat in a day?", category: "🥗   Health & Nutrition", prompt: 'Help me calculate my ideal daily calorie intake. Ask for my age, gender, weight, height, and activity level.',colors: ['#22C55E', '#4ADE80'], },
+{ title: "🎥   Youtube Channel about Health, Nutrition and Sports", category: "🥗   Health & Nutrition", prompt: 'Help me create a YouTube channel plan about Health, Nutrition, and Sports. Suggest channel name, content strategy, and video topics.',colors: ['#22C55E', '#4ADE80'], },
+{ title: "📅   Training Plan Generator", category: "🥗   Health & Nutrition", prompt: 'Ask me about my fitness goals and experience. Then generate a personalized weekly training plan.',colors: ['#22C55E', '#4ADE80'], },
 
 
   // Greetings
- { title: "🎄   Merry Christmas", category: "🎁   Greetings", prompt: 'Write a heartfelt or funny Merry Christmas message. Ask me who it’s for (family, friend, colleague).' },
-{ title: "👩‍👧   Happy Mother's Day", category: "🎁   Greetings", prompt: 'Write a touching or creative Mother’s Day message that I can send to my mom or a mother figure.' },
-{ title: "🎉   Happy Birthday", category: "🎁   Greetings", prompt: 'Write a personalized Happy Birthday message. Ask me about the person’s name, relationship, and age.' },
-{ title: "💘   Happy Valentine's Day", category: "🎁   Greetings", prompt: 'Write a romantic or funny Valentine’s Day message. Ask who it’s for (partner, crush, friend).' },
-{ title: "💍   Happy Anniversary", category: "🎁   Greetings", prompt: 'Create a romantic or funny anniversary message. Ask me how many years and who it' },
-{ title: "🦃   Happy Thanksgiving", category: "🎁   Greetings", prompt: 'Write a warm, thankful message for Thanksgiving. Ask me if it’s for family, friends, or colleagues.' },
-{ title: "🎃   Happy Halloween", category: "🎁   Greetings", prompt: 'Write a spooky or fun Happy Halloween message. Ask me who I’m sending it to (kids, friends, coworkers).' },
-{ title: "🌍   Greetings in 101 languages", category: "🎁   Greetings", prompt: 'Give me “Hello” or a greeting message in 101 different languages. Optionally include how to pronounce each.' },
+ { title: "🎄   Merry Christmas", category: "🎁   Greetings", prompt: 'Write a heartfelt or funny Merry Christmas message. Ask me who it’s for (family, friend, colleague).',colors: ['#3B82F6', '#60A5FA'], },
+{ title: "👩‍👧   Happy Mother's Day", category: "🎁   Greetings", prompt: 'Write a touching or creative Mother’s Day message that I can send to my mom or a mother figure.',colors: ['#3B82F6', '#60A5FA'], },
+{ title: "🎉   Happy Birthday", category: "🎁   Greetings", prompt: 'Write a personalized Happy Birthday message. Ask me about the person’s name, relationship, and age.',colors: ['#3B82F6', '#60A5FA'], },
+{ title: "💘   Happy Valentine's Day", category: "🎁   Greetings", prompt: 'Write a romantic or funny Valentine’s Day message. Ask who it’s for (partner, crush, friend).',colors: ['#3B82F6', '#60A5FA'], },
+{ title: "💍   Happy Anniversary", category: "🎁   Greetings", prompt: 'Create a romantic or funny anniversary message. Ask me how many years and who it',colors: ['#3B82F6', '#60A5FA'], },
+{ title: "🦃   Happy Thanksgiving", category: "🎁   Greetings", prompt: 'Write a warm, thankful message for Thanksgiving. Ask me if it’s for family, friends, or colleagues.',colors: ['#3B82F6', '#60A5FA'], },
+{ title: "🎃   Happy Halloween", category: "🎁   Greetings", prompt: 'Write a spooky or fun Happy Halloween message. Ask me who I’m sending it to (kids, friends, coworkers).',colors: ['#3B82F6', '#60A5FA'], },
+{ title: "🌍   Greetings in 101 languages", category: "🎁   Greetings", prompt: 'Give me “Hello” or a greeting message in 101 different languages. Optionally include how to pronounce each.',colors: ['#3B82F6', '#60A5FA'], },
 
 ];

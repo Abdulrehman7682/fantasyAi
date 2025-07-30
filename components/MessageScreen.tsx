@@ -14,7 +14,7 @@ import { useTheme } from 'contexts/ThemeContext';
 export default function ChatScreen() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { initialUserMessage } = route.params || {};
+  const { initialUserMessage  } = route.params || {};
 
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');

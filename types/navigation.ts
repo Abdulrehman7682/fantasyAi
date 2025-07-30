@@ -10,6 +10,7 @@ export type RootStackParamList = {
     character: {
       id: number | string;
       name: string;
+      gradientColors? : string[];
       description?: string; 
       avatar: any;
       tags?: string[];
